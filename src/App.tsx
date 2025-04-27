@@ -89,7 +89,9 @@ function App() {
 
         {/* Heatmap Placeholder */}
         <div className="flex-1 bg-gray-200 rounded-lg flex items-center justify-center">
-          <p className="text-gray-600 text-lg">Heatmap Goes Here</p>
+          <p className="text-gray-600 text-lg">
+            <HeatMap center={[37.7749, -122.4194]} zoom={13} />
+          </p>
         </div>
       </div>
     </div>
