@@ -33,10 +33,10 @@ function App() {
   }, [currentStep]);
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-gray-900 flex">
       {/* Left half - Heatmap */}
       <div className="w-1/2 p-8">
-        <h1 className="text-4xl font-bold mb-8">War Game Heatmap</h1>
+        <h1 className="text-4xl font-bold mb-8 text-gray-100">War Game Heatmap</h1>
         <div className="rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
           <HeatMap
             center={[51.505, -0.09]}
@@ -46,9 +46,9 @@ function App() {
       </div>
       
       {/* Right half - Message Area */}
-      <div className="w-1/2 p-8 border-l border-gray-200">
-        <h1 className="text-4xl font-bold mb-4">Message Log</h1>
-        <div className="h-[calc(100vh-140px)] overflow-y-auto pr-4 border rounded-lg p-4">
+      <div className="w-1/2 p-8 border-l border-gray-700">
+        <h1 className="text-4xl font-bold mb-4 text-gray-100">Message Log</h1>
+        <div className="h-[calc(100vh-140px)] overflow-y-auto pr-4 border rounded-lg p-4 border-gray-700 bg-gray-800">
           <div className="space-y-1">
             {messages.map((message, index) => (
               <Message 

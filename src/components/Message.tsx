@@ -13,11 +13,11 @@ type MessageProps = {
 const getCategoryStyles = (category: string): string => {
   switch (category) {
     case 'Good':
-      return 'bg-green-100';
+      return 'bg-green-900 text-green-100';
     case 'Bad':
-      return 'bg-red-100';
+      return 'bg-red-900 text-red-100';
     default:
-      return 'bg-gray-100';
+      return 'bg-gray-700 text-gray-100';
   }
 };
 
@@ -35,9 +35,9 @@ const Message: React.FC<MessageProps> = ({
       <h1 className="text-lg font-bold">{vehicle_type}:{call_sign}</h1>
       <h2 className="text-md font-semibold mt-1">{action}</h2>
       {enemy_type && enemy_callsign && (
-        <h2 className="text-md font-semibold mt-1 text-red-800">{enemy_type}:{enemy_callsign}</h2>
+        <h2 className="text-md font-semibold mt-1 text-red-300">{enemy_type}:{enemy_callsign}</h2>
       )}
-      <p className="text-sm text-gray-700 mt-2">{explanation}</p>
+      <p className="text-sm mt-2 opacity-90">{explanation}</p>
     </div>
   </div>
 );
