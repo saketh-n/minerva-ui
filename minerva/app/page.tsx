@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Message from "../components/ui/Message";
 import YouTube from "react-youtube";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
@@ -11,18 +10,6 @@ import {
   SimpleTextAttachmentAdapter,
 } from "@assistant-ui/react";
 
-type Category = 'positive' | 'negative' | 'neutral';
-
-type MessageType = {
-  id: number;
-  action: string;
-  vehicle: string;
-  callSign: string;
-  enemy?: string;
-  explanation: string;
-  category: Category;
-};
-
 // Define our own simple chat messages as a fallback
 type SimpleChatMessage = {
   id: string;
@@ -31,8 +18,6 @@ type SimpleChatMessage = {
 };
 
 export default function Home() {
-  const [messages, setMessages] = useState<MessageType[]>([]);
-  const [connected, setConnected] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<SimpleChatMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,94 +45,6 @@ export default function Home() {
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages, runtime.messages]);
-
-  // WebSocket connection for military messages
-  useEffect(() => {
-    let ws: WebSocket | null = null;
-    
-    try {
-      ws = new WebSocket('ws://localhost:8765');
-      
-      ws.onopen = () => {
-        console.log('Connected to WebSocket server');
-        setConnected(true);
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const newMessage = JSON.parse(event.data);
-          setMessages(prevMessages => [...prevMessages, newMessage]);
-        } catch (error) {
-          console.error('Failed to parse message:', error);
-        }
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setConnected(false);
-      };
-      
-      ws.onclose = () => {
-        console.log('Disconnected from WebSocket server');
-        setConnected(false);
-      };
-    } catch (error) {
-      console.error('WebSocket connection failed:', error);
-      setConnected(false);
-    }
-    
-    return () => {
-      if (ws) ws.close();
-    };
-  }, []);
-
-  // Add demo messages if WebSocket connection fails
-  useEffect(() => {
-    if (!connected && messages.length === 0) {
-      const demoMessages: MessageType[] = [
-        {
-          id: 1,
-          action: "Spotted enemy tank",
-          vehicle: "Drone",
-          callSign: "Eagle-Eye",
-          enemy: "T-90 Tank",
-          explanation: "Enemy tank moving south along ridge line",
-          category: "neutral"
-        },
-        {
-          id: 2,
-          action: "Engaging target",
-          vehicle: "Artillery",
-          callSign: "Thunder-1",
-          enemy: "Infantry Squad",
-          explanation: "Firing on enemy position with HE rounds",
-          category: "positive"
-        },
-        {
-          id: 3,
-          action: "Under fire",
-          vehicle: "Humvee",
-          callSign: "Road-Runner",
-          enemy: "Sniper",
-          explanation: "Taking small arms fire from northern tree line",
-          category: "negative"
-        }
-      ];
-      
-      // Add messages with a delay between each
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < demoMessages.length) {
-          setMessages(prev => [...prev, demoMessages[index]]);
-          index++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 1500);
-      
-      return () => clearInterval(interval);
-    }
-  }, [connected, messages.length]);
 
   // Handle chat submission - first try with runtime, fallback to simple chat
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,86 +128,89 @@ export default function Home() {
   const chatMessagesToShow = useRuntimeChat ? runtime.messages : chatMessages;
   const isLoading = useRuntimeChat ? runtime.isLoading : isSubmitting;
 
+  // Format timestamp for military-style
+  const getTimestamp = () => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit' 
+    });
+  };
+
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="min-h-screen bg-white flex">
+      <div className="min-h-screen bg-zinc-900 text-green-400 flex">
         {/* Left half - War Game Replay */}
-        <div className="w-1/2 p-8">
-          <h1 className="text-4xl font-bold mb-8">War Game Replay</h1>
-          <div className="aspect-video rounded-lg overflow-hidden">
-            <YouTube
-              videoId="5mSPQlDgzBY"
-              opts={videoOpts}
-              className="w-full h-full"
-            />
+        <div className="w-1/2 p-6">
+          <div className="border-2 border-green-700 rounded p-4 mb-4 bg-zinc-800">
+            <div className="flex justify-between items-center mb-4">
+              <h1 className="text-3xl font-mono uppercase tracking-wider">MISSION REPLAY</h1>
+            </div>
+            <div className="aspect-video rounded overflow-hidden border border-green-700 relative">
+              <div className="absolute top-0 left-0 z-10 bg-zinc-800 text-green-400 text-xs font-mono p-1">
+                LIVE FEED: DELTA SECTOR
+              </div>
+              <div className="absolute top-0 right-0 z-10 bg-zinc-800 text-green-400 text-xs font-mono p-1">
+                {getTimestamp()} UTC
+              </div>
+              <YouTube
+                videoId="5mSPQlDgzBY"
+                opts={videoOpts}
+                className="w-full h-full"
+              />
+            </div>
           </div>
         </div>
         
-        {/* Right half - Message Area and Heatmap */}
-        <div className="w-1/2 p-8 border-l border-gray-200 flex flex-col">
-          {/* Military Message Log */}
-          <div className="mb-6">
-            <div className="flex items-center mb-4">
-              <h1 className="text-3xl font-bold">Battlefield Updates</h1>
-              <div className={`ml-3 w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`} 
-                   title={connected ? 'Connected to server' : 'Not connected to server'}>
-              </div>
-            </div>
-            <div className="h-[35vh] overflow-y-auto pr-4 border rounded-lg p-4 bg-gray-50">
-              <div className="space-y-1">
-                {messages.length > 0 ? (
-                  messages.map((message) => (
-                    <Message 
-                      key={message.id} 
-                      action={message.action}
-                      vehicle={message.vehicle}
-                      callSign={message.callSign}
-                      enemy={message.enemy}
-                      explanation={message.explanation}
-                      category={message.category}
-                    />
-                  ))
-                ) : (
-                  <div className="text-gray-500 text-center py-10">
-                    Waiting for battlefield updates...
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
+        {/* Right half - Command Chat and Heatmap */}
+        <div className="w-1/2 p-6 border-l border-green-700 flex flex-col">
           {/* Command Chat Interface */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-3">Command Chat</h2>
-            <div className="border rounded-lg p-4 bg-gray-50">
+          <div className="mb-4 flex-1 border-2 border-green-700 rounded p-4 bg-zinc-800">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-mono uppercase tracking-wider">COMMAND UPLINK</h2>
+              <div className="flex space-x-1 items-center">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              </div>
+            </div>
+            <div className="h-[50vh] flex flex-col border border-green-700 bg-zinc-900 rounded">
               <div 
                 ref={chatContainerRef} 
-                className="h-[20vh] overflow-y-auto mb-3 px-2"
+                className="flex-1 overflow-y-auto p-3 font-mono text-sm"
               >
                 {chatMessagesToShow && chatMessagesToShow.length > 0 ? (
                   // @ts-ignore - Ignoring type issues as we're handling both runtime messages and fallback
                   chatMessagesToShow.map((message: any) => (
-                    <div key={message.id} 
-                         className={`p-2 rounded mb-2 ${message.role === 'user' ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-white border max-w-[80%]'}`}>
-                      <div className="font-semibold text-sm text-gray-700">
-                        {message.role === 'user' ? 'You' : 'Command Center'}
+                    <div key={message.id} className="mb-3">
+                      <div className="text-xs text-green-600 mb-1">
+                        {message.role === 'user' 
+                          ? '► FIELD COMMANDER [OUTGOING]' 
+                          : '◄ COMMAND CENTER [INCOMING]'
+                        } | {getTimestamp()}
                       </div>
-                      <div className="mt-1">{message.content}</div>
-                      {useRuntimeChat && message.attachments?.map((attachment: any, index: number) => (
-                        <div key={index} className="mt-1">
-                          {runtime.renderAttachment && runtime.renderAttachment(attachment)}
-                        </div>
-                      ))}
+                      <div className={`p-2 rounded ${
+                        message.role === 'user' 
+                          ? 'bg-green-900 bg-opacity-20 border border-green-800' 
+                          : 'bg-zinc-800 border border-green-900'
+                      }`}>
+                        {message.content}
+                        {useRuntimeChat && message.attachments?.map((attachment: any, index: number) => (
+                          <div key={index} className="mt-1 border-t border-green-800 pt-1">
+                            {runtime.renderAttachment && runtime.renderAttachment(attachment)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-gray-500 text-center py-8">
-                    Start a conversation with Command Center
+                  <div className="text-green-500 text-center py-8 opacity-75">
+                    [ AWAITING TRANSMISSION ]
                   </div>
                 )}
               </div>
               
-              <form onSubmit={handleSubmit} className="flex">
+              <form onSubmit={handleSubmit} className="flex p-2 border-t border-green-700 bg-zinc-800">
                 <input
                   type="text"
                   value={useRuntimeChat ? (runtime.input || '') : chatInput}
@@ -321,26 +221,43 @@ export default function Home() {
                       setChatInput(e.target.value);
                     }
                   }}
-                  placeholder="Type a message to Command Center..."
-                  className="flex-1 p-2 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter message for Command..."
+                  className="flex-1 p-2 bg-zinc-900 border border-green-700 rounded-l text-green-400 font-mono placeholder:text-green-600 focus:outline-none focus:ring-1 focus:ring-green-500"
                   disabled={isLoading}
                 />
                 <button 
                   type="submit" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-300"
+                  className="px-4 py-2 bg-green-800 text-black font-mono uppercase tracking-wide rounded-r hover:bg-green-600 focus:outline-none disabled:bg-zinc-700 disabled:text-zinc-500 transition-colors"
                   disabled={isLoading || (useRuntimeChat ? !(runtime.input && runtime.input.trim()) : !chatInput.trim())}
                 >
-                  {isLoading ? 'Sending...' : 'Send'}
+                  {isLoading ? 'SENDING...' : 'TRANSMIT'}
                 </button>
               </form>
             </div>
           </div>
 
           {/* Heatmap */}
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-3">Battlefield Heatmap</h2>
-            <div className="h-full bg-gray-200 rounded-lg flex items-center justify-center">
-              <p className="text-gray-600 text-lg">Heatmap Visualization Coming Soon</p>
+          <div className="flex-1 border-2 border-green-700 rounded p-4 bg-zinc-800">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-mono uppercase tracking-wider">TACTICAL HEATMAP</h2>
+              <div className="font-mono text-xs px-2 py-1 bg-zinc-700 rounded border border-green-700">
+                REFRESHED: {getTimestamp()}
+              </div>
+            </div>
+            <div className="h-[25vh] bg-zinc-900 rounded border border-green-700 flex items-center justify-center p-4 relative">
+              <div className="absolute top-2 left-2 text-xs font-mono text-green-600">GRID COORDINATES: N38°W115°</div>
+              <div className="absolute top-2 right-2 text-xs font-mono text-green-600">SCALE: 1:50,000</div>
+              <p className="text-green-500 font-mono tracking-wide">TACTICAL OVERLAY LOADING...</p>
+              
+              {/* Simulated radar scan effect */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="w-full h-full relative">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border-2 border-green-500 rounded-full opacity-10 animate-ping"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] border border-green-500 rounded-full opacity-20"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-green-500 rounded-full opacity-30"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] border border-green-500 rounded-full opacity-40"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
