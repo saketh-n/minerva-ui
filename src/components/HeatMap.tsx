@@ -289,6 +289,11 @@ const scenarios: Scenario[] = [
     name: "Taiwan Straits",
     markerCenter: [25.047, 121.532], // Taipei area
     heatmapPoints: generateBattlefieldData([25.047, 121.532], 0.06) // 4 planes with spacing
+  },
+  {
+    name: "Taiwan Straits South",
+    markerCenter: [23.047, 121.532], // Taipei area
+    heatmapPoints: generateBattlefieldData([23.047, 121.532], 0.06) // 4 planes with spacing
   }
 ];
 
