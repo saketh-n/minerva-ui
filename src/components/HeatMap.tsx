@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, CircleMarker, Polyline, Popup } from 'react-leaflet';
+import { MapSetup } from './MapSetup';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
@@ -97,33 +98,33 @@ const fighterJetTypes = [
 ];
 
 // Generate battlefield data with exactly 4 enemy fighter jets
-const generateBattlefieldData = (center: [number, number], radius = 0.02): FighterJet[] => {
+const generateBattlefieldData = (center: [number, number], radius = 0.4): FighterJet[] => {
   const jets: FighterJet[] = [];
   
   // Create 4 specific positions for the jets
   const positions = [
     // Position 1 - North
     {
-      lat: center[0] + radius * 0.7,
+      lat: center[0] + radius *3,
       lng: center[1],
       type: 'SU-57'
     },
     // Position 2 - East
     {
       lat: center[0],
-      lng: center[1] + radius * 0.7,
+      lng: center[1] + radius * 4,
       type: 'J-20'
     },
     // Position 3 - South
     {
-      lat: center[0] - radius * 0.7,
+      lat: center[0] - radius * 12,
       lng: center[1],
       type: 'F-22'
     },
     // Position 4 - West
     {
       lat: center[0],
-      lng: center[1] - radius * 0.7,
+      lng: center[1] - radius * 9,
       type: 'SU-35'
     }
   ];
@@ -169,24 +170,9 @@ const createSpecificJet = (lat: number, lng: number, jetType: string, index: num
 
 const scenarios: Scenario[] = [
   {
-    name: "Northern Taiwan",
+    name: "Taiwan Straits",
     markerCenter: [25.047, 121.532], // Taipei area
     heatmapPoints: generateBattlefieldData([25.047, 121.532], 0.06) // 4 planes with spacing
-  },
-  {
-    name: "Eastern Taiwan",
-    markerCenter: [23.993, 121.601], // Hualien area
-    heatmapPoints: generateBattlefieldData([23.993, 121.601], 0.05) // 4 planes with spacing
-  },
-  {
-    name: "Southern Taiwan",
-    markerCenter: [22.997, 120.212], // Tainan area
-    heatmapPoints: generateBattlefieldData([22.997, 120.212], 0.065) // 4 planes with spacing
-  },
-  {
-    name: "Taiwan Strait",
-    markerCenter: [24.150, 119.500], // Taiwan Strait
-    heatmapPoints: generateBattlefieldData([24.150, 119.500], 0.07) // 4 planes with spacing
   }
 ];
 
@@ -218,8 +204,10 @@ function useMovingMarker(center: [number, number]): MarkerPosition {
   return markerData;
 }
 
-function MarkerLayer({ position, rotation }: MarkerPosition) {
-  // Empty component - no marker displayed
+// Empty component that accepts MarkerPosition props but doesn't render anything
+function MarkerLayer({ position: _position, rotation: _rotation }: MarkerPosition): null {
+  // Not using position and rotation props anymore, but keeping the interface
+  // for compatibility with existing code
   return null;
 }
 
@@ -230,19 +218,32 @@ function initializeAnimatedPoints(points: Point[]): AnimatedPoint[] {
     const latitudeRadians = point.lat * (Math.PI / 180);
     const longitudeCorrectionFactor = Math.cos(latitudeRadians);
     
-    // Create large elliptical patterns
+    // Create large elliptical patterns for planes
     // Higher value aircraft get slightly larger patterns
     const intensity = point.intensity || 0.5;
-    const baseSize = 0.015 + (intensity * 0.01); // Base size increases with intensity
     
-    // Create elliptical orbit parameters
-    // Make X radius (longitude) larger than Y radius (latitude) for elongated patterns
-    // Adjust longitude radius by correction factor to maintain proper elliptical shape
-    const radiusY = baseSize + (Math.random() * 0.015); // Latitude radius (slightly larger)
-    const radiusX = (baseSize * 2 + (Math.random() * 0.02)) / longitudeCorrectionFactor; // Longitude radius (more elongated)
+    // Convert km to degrees (approximately)
+    // 1 degree of latitude is roughly 111 km
+    // 1 degree of longitude varies with latitude, hence the correction factor
+    const kmToLatDegrees = 1 / 111;
+    const kmToLngDegrees = kmToLatDegrees / longitudeCorrectionFactor;
     
-    // Faster movement speed so aircraft are visibly moving
-    const speed = 0.01 + (Math.random() * 0.01); // 5-10x faster to be visible
+    // Create elliptical orbit parameters for at least 100 km length
+    // For an ellipse, the perimeter is approximately 2π * sqrt((a² + b²)/2) where a and b are the semi-major and semi-minor axes
+    // To ensure at least 100 km length, we need to make the axes large enough
+    
+    // Make major axis (longitude) significantly larger than minor axis (latitude) for elongated elliptical paths
+    // Base values ensure minimum 100 km perimeter
+    const minRadiusY = 0.45 * kmToLatDegrees; // ~50 km in latitude direction
+    const minRadiusX = 0.9 * kmToLngDegrees;  // ~100 km in longitude direction
+    
+    // Add some randomness to make each path unique
+    // Intensity affects the size - higher value aircraft get larger patterns
+    const radiusY = minRadiusY + (0.1 * intensity * kmToLatDegrees) + (Math.random() * 0.1 * kmToLatDegrees);
+    const radiusX = minRadiusX + (0.15 * intensity * kmToLngDegrees) + (Math.random() * 0.15 * kmToLngDegrees);
+    
+    // Adjust speed for larger ellipses - slower for larger paths to maintain reasonable movement
+    const speed = 0.005 + (Math.random() * 0.003); // Slower for larger ellipses
     
     // Random starting angle and direction
     const angle = Math.random() * Math.PI * 2;
@@ -375,17 +376,17 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
     
     const color = getColor();
     
-    // Create a custom fighter jet icon
+    // Create a custom fighter jet icon that looks like a plane
     return L.divIcon({
       className: 'fighter-jet-icon',
       html: `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L4 14H20L12 2Z" fill="${color}" stroke="#000" stroke-width="1"/>
-          <path d="M12 14L8 22H16L12 14Z" fill="${color}" stroke="#000" stroke-width="1"/>
-        </svg>
+        <svg width="40" height="40" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <path d="M256 0 L288 192 L448 256 L288 320 L256 512 L224 320 L64 256 L224 192 Z" 
+          fill="${color}" stroke="black" stroke-width="10" />
+  </svg>
       `,
       iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconAnchor: [12, 12]
     });
   }
   
@@ -436,7 +437,7 @@ function HeatMapLayer({ points }: { points: Point[] }) {
       ]);
 
       const heatLayer = L.heatLayer(formattedPoints as [number, number, number][], {
-        radius: 35,       // Smaller radius for more defined individual points
+        radius: 55,       // Smaller radius for more defined individual points
         blur: 25,         // Less blur to prevent overlap between dispersed points
         maxZoom: 10,
         minOpacity: 0.2,  // Slightly higher minimum opacity
@@ -722,12 +723,8 @@ export default function HeatMap({ zoom = 8 }: HeatMapProps) { // Default zoom le
       </div>
       
       <MapContainer
-        center={currentScenario.markerCenter}
-        zoom={zoom}
         className="leaflet-container"
         style={{ height: '100%', width: '100%' }}
-        maxBounds={[[21.5, 118.0], [26.5, 123.0]]} // Restrict panning to Taiwan area
-        minZoom={7} // Prevent zooming out too far
       >
         {/* Add map controls */}
         <div style={{
@@ -743,17 +740,16 @@ export default function HeatMap({ zoom = 8 }: HeatMapProps) { // Default zoom le
           fontWeight: 'bold',
           zIndex: 1000
         }}>⚠ SIMULATION ONLY</div>
+        {/* MapController to handle center and zoom */}
+        <MapSetup center={currentScenario.markerCenter} zoom={zoom} />
         <ZoomControls />
 
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.maptiler.com/">MapTiler</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {/* Add a second tile layer for terrain visualization */}
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          attribution='&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-          opacity={0.6}
         />
         <MarkerLayer {...markerData} />
         <HeatMapLayer points={currentScenario.heatmapPoints} />

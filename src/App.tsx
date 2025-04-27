@@ -93,7 +93,7 @@ function App() {
           <div style={{ width: '100%', height: '100%', minHeight: '300px' }}>
             <HeatMap
               center={[51.505, -0.09]}
-              zoom={13}
+              zoom={6}
             />
           </div>
         </div>
