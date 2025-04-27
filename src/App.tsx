@@ -20,13 +20,17 @@ function App() {
   useEffect(() => {
     // Set up interval to emit messages
     const interval = setInterval(() => {
-      if (currentStep < simulationData.Timesteps.length) {
-        const timestep = simulationData.Timesteps[currentStep];
-        setMessages(prevMessages => [...prevMessages, timestep.message]);
-        setCurrentStep(prev => prev + 1);
-      } else {
-        clearInterval(interval);
-      }
+      // Get the current timestep
+      const timestep = simulationData.Timesteps[currentStep];
+      
+      // Add the new message
+      setMessages(prevMessages => [...prevMessages, timestep.message]);
+      
+      // Update step, loop back to 0 if we reach the end
+      setCurrentStep(prev => (prev + 1) % simulationData.Timesteps.length);
+      
+      // Keep only the last 10 messages to prevent too much memory usage
+      setMessages(prevMessages => prevMessages.slice(-10));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -52,7 +56,7 @@ function App() {
           <div className="space-y-1">
             {messages.map((message, index) => (
               <Message 
-                key={index}
+                key={`${index}-${message.vehicle_type}-${message.call_sign}`}
                 vehicle_type={message.vehicle_type}
                 call_sign={message.call_sign}
                 action={message.action}
