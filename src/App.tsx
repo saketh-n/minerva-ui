@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Message from "./components/Message";
+import YouTube from "react-youtube";
 
 type Category = 'positive' | 'negative' | 'neutral';
 
@@ -41,13 +42,26 @@ function App() {
     };
   }, []);
 
+  const videoOpts = {
+    height: '100%',
+    width: '100%',
+    playerVars: {
+      autoplay: 0,
+      controls: 1,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left half - War Game Replay */}
       <div className="w-1/2 p-8">
         <h1 className="text-4xl font-bold mb-8">War Game Replay</h1>
-        <div className="bg-gray-200 rounded-lg aspect-video flex items-center justify-center">
-          <p className="text-gray-600 text-lg">Video Player Placeholder</p>
+        <div className="aspect-video rounded-lg overflow-hidden">
+          <YouTube
+            videoId="5mSPQlDgzBY"
+            opts={videoOpts}
+            className="w-full h-full"
+          />
         </div>
       </div>
       
