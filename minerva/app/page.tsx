@@ -13,14 +13,30 @@ import {
 // Define our own simple chat messages as a fallback
 type SimpleChatMessage = {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
+};
+
+// Define WebSocket message type
+type WebSocketMessage = {
+  id: number;
+  action: string;
+  vehicle: string;
+  callSign: string;
+  enemy?: string;
+  explanation: string;
+  category: 'positive' | 'negative' | 'neutral';
+  timestamp: string;
+  influence_analysis: any; // This will hold the influence analysis data
+  action_mapping?: string;
 };
 
 export default function Home() {
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<SimpleChatMessage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [influenceAnalysis, setInfluenceAnalysis] = useState<any>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   
   // Initialize chat runtime
@@ -40,6 +56,103 @@ export default function Home() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   };
+
+  // Connect to WebSocket server
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8765');
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server');
+      setWsConnected(true);
+      
+      // Add system message when connected
+      const connectionMessage: SimpleChatMessage = {
+        id: Date.now().toString(),
+        role: 'system',
+        content: 'SECURE CONNECTION ESTABLISHED WITH FIELD UNITS'
+      };
+      setChatMessages(prev => [...prev, connectionMessage]);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const wsMessage: WebSocketMessage = JSON.parse(event.data);
+        
+        // Store the influence analysis data
+        if (wsMessage.influence_analysis) {
+          setInfluenceAnalysis(wsMessage.influence_analysis);
+        }
+        
+        // Format the timestamp
+        const timestamp = wsMessage.timestamp ? 
+          new Date(wsMessage.timestamp).toLocaleTimeString('en-US', { 
+            hour12: false, 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit' 
+          }) : 
+          getTimestamp();
+        
+        // Format the WebSocket message as a user input
+        const formattedInput = `${wsMessage.action} ${wsMessage.callSign}`;
+        
+        // Add message as if it was user input
+        const userMessage: SimpleChatMessage = {
+          id: `user-${wsMessage.id}`,
+          role: 'user',
+          content: formattedInput
+        };
+        
+        setChatMessages(prev => [...prev, userMessage]);
+        
+        // Now create and add the response message
+        setTimeout(() => {
+          // Format the response content
+          const responseContent = `${wsMessage.action.toUpperCase()} | ${wsMessage.vehicle} ${wsMessage.callSign} | ${wsMessage.explanation} ${wsMessage.enemy ? `| ENEMY: ${wsMessage.enemy}` : ''} | ${timestamp}`;
+          
+          // Add AI response message
+          const aiResponseMessage: SimpleChatMessage = {
+            id: `response-${wsMessage.id}`,
+            role: 'assistant',
+            content: responseContent
+          };
+          
+          setChatMessages(prev => [...prev, aiResponseMessage]);
+        }, 500); // Add a small delay to make it seem like a response
+        
+        // Log detailed message for debugging
+        console.log('Received message:', wsMessage);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      const errorMessage: SimpleChatMessage = {
+        id: Date.now().toString(),
+        role: 'system',
+        content: 'ERROR: COMMUNICATION LINK DISRUPTED'
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    };
+
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+      setWsConnected(false);
+      
+      const disconnectMessage: SimpleChatMessage = {
+        id: Date.now().toString(),
+        role: 'system',
+        content: 'ALERT: FIELD UNIT CONNECTION TERMINATED'
+      };
+      setChatMessages(prev => [...prev, disconnectMessage]);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   // Scroll chat to bottom when messages change
   useEffect(() => {
@@ -210,6 +323,7 @@ export default function Home() {
                 )}
               </div>
               
+              {/* Input form commented out - only receiving WebSocket messages
               <form onSubmit={handleSubmit} className="flex p-2 border-t border-green-700 bg-zinc-800">
                 <input
                   type="text"
@@ -233,31 +347,113 @@ export default function Home() {
                   {isLoading ? 'SENDING...' : 'TRANSMIT'}
                 </button>
               </form>
+              */}
+              <div className="p-2 border-t border-green-700 bg-zinc-800 text-center">
+                <div className="text-green-500 font-mono text-sm">
+                  [ INCOMING TRANSMISSIONS ONLY ]
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Heatmap */}
+          {/* Influence Analysis (formerly Heatmap) */}
           <div className="flex-1 border-2 border-green-700 rounded p-4 bg-zinc-800">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-mono uppercase tracking-wider">TACTICAL HEATMAP</h2>
+              <h2 className="text-2xl font-mono uppercase tracking-wider">INFLUENCE ANALYSIS</h2>
               <div className="font-mono text-xs px-2 py-1 bg-zinc-700 rounded border border-green-700">
                 REFRESHED: {getTimestamp()}
               </div>
             </div>
-            <div className="h-[25vh] bg-zinc-900 rounded border border-green-700 flex items-center justify-center p-4 relative">
-              <div className="absolute top-2 left-2 text-xs font-mono text-green-600">GRID COORDINATES: N38°W115°</div>
-              <div className="absolute top-2 right-2 text-xs font-mono text-green-600">SCALE: 1:50,000</div>
-              <p className="text-green-500 font-mono tracking-wide">TACTICAL OVERLAY LOADING...</p>
+            <div className="h-[25vh] bg-zinc-900 rounded border border-green-700 p-4 relative overflow-auto">
+              <div className="absolute top-2 left-2 text-xs font-mono text-green-600">ANALYSIS TYPE: STRATEGIC INFLUENCE</div>
               
-              {/* Simulated radar scan effect */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="w-full h-full relative">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border-2 border-green-500 rounded-full opacity-10 animate-ping"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] border border-green-500 rounded-full opacity-20"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-green-500 rounded-full opacity-30"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] border border-green-500 rounded-full opacity-40"></div>
+              {!influenceAnalysis ? (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <p className="text-green-500 font-mono tracking-wide mb-2">AWAITING DATA TRANSMISSION...</p>
+                  
+                  {/* Simulated radar scan effect */}
+                  <div className="w-32 h-32 relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border-2 border-green-500 rounded-full opacity-10 animate-ping"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] border border-green-500 rounded-full opacity-20"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] border border-green-500 rounded-full opacity-30"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] border border-green-500 rounded-full opacity-40"></div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 h-full">
+                  {/* Top Influencers */}
+                  <div className="border border-green-700 bg-zinc-800 bg-opacity-50 p-2 rounded">
+                    <h3 className="text-sm font-mono text-green-400 mb-2">TOP INFLUENCE FACTORS</h3>
+                    <ul className="text-xs font-mono space-y-1">
+                      {Object.keys(influenceAnalysis).map((action, idx) => (
+                        <li key={idx} className="flex justify-between">
+                          <span>{action}:</span>
+                          <span className="text-green-300">
+                            {influenceAnalysis[action]?.top_3_overall?.features?.slice(0, 3).join(', ') || 'N/A'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Entity Breakdown */}
+                  <div className="border border-green-700 bg-zinc-800 bg-opacity-50 p-2 rounded">
+                    <h3 className="text-sm font-mono text-green-400 mb-2">ENTITY INFLUENCE SCORES</h3>
+                    <ul className="text-xs font-mono space-y-1">
+                      {Object.keys(influenceAnalysis).slice(0, 3).map((action, idx) => (
+                        <li key={idx} className="flex justify-between">
+                          <span>{action}:</span>
+                          <span className="text-green-300">
+                            {influenceAnalysis[action]?.entities?.top_3?.scores
+                              ?.map((score: number) => score.toFixed(2))
+                              .join(', ') || 'N/A'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Visibility Analysis */}
+                  <div className="border border-green-700 bg-zinc-800 bg-opacity-50 p-2 rounded">
+                    <h3 className="text-sm font-mono text-green-400 mb-2">VISIBILITY METRICS</h3>
+                    <ul className="text-xs font-mono space-y-1">
+                      {Object.keys(influenceAnalysis).slice(0, 1).map((action, idx) => (
+                        <React.Fragment key={idx}>
+                          <li className="flex justify-between">
+                            <span>Legacy:</span>
+                            <span className="text-green-300">
+                              {influenceAnalysis[action]?.visibility?.legacy?.toFixed(2) || 'N/A'}
+                            </span>
+                          </li>
+                          <li className="flex justify-between">
+                            <span>Dynasty:</span>
+                            <span className="text-green-300">
+                              {influenceAnalysis[action]?.visibility?.dynasty?.toFixed(2) || 'N/A'}
+                            </span>
+                          </li>
+                        </React.Fragment>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Mission Impact */}
+                  <div className="border border-green-700 bg-zinc-800 bg-opacity-50 p-2 rounded">
+                    <h3 className="text-sm font-mono text-green-400 mb-2">MISSION IMPACT</h3>
+                    <ul className="text-xs font-mono space-y-1">
+                      {Object.keys(influenceAnalysis).slice(0, 3).map((action, idx) => (
+                        <li key={idx} className="flex justify-between">
+                          <span>{action}:</span>
+                          <span className="text-green-300">
+                            {influenceAnalysis[action]?.mission?.top_3?.scores
+                              ?.map((score: number) => score.toFixed(2))
+                              .join(', ') || 'N/A'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
