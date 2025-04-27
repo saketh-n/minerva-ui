@@ -63,13 +63,7 @@ interface MarkerPosition {
   rotation: number;
 }
 
-// Create a custom triangle icon
-const triangleIcon = L.divIcon({
-  className: 'custom-marker',
-  html: '<div style="width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid red; transform: rotate(180deg);"></div>',
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-});
+
 
 // Define threat positions
 const threatPositions = [
@@ -225,23 +219,7 @@ function useMovingMarker(center: [number, number]): MarkerPosition {
 }
 
 function MarkerLayer({ position, rotation }: MarkerPosition) {
-  const map = useMap();
-
-  useEffect(() => {
-    const marker = L.marker(position, { icon: triangleIcon }).addTo(map);
-    const markerElement = marker.getElement();
-    if (markerElement) {
-      const triangleDiv = markerElement.querySelector('div');
-      if (triangleDiv) {
-        triangleDiv.style.transform = `rotate(${rotation}deg)`;
-      }
-    }
-
-    return () => {
-      map.removeLayer(marker);
-    };
-  }, [map, position, rotation]);
-
+  // Empty component - no marker displayed
   return null;
 }
 
