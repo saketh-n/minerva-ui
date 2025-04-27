@@ -35,17 +35,18 @@ interface FighterJet extends Point {
   speed: number; // in knots
   heading: number; // in degrees
   lastUpdated: Date;
+  friendly: boolean; // Whether the jet is friendly or enemy
+  attribution?: number; // Attribution score (0-1 scale)
 }
 
 interface AnimatedPoint extends Point {
-  // Simple elliptical movement properties
-  radiusX: number; // X-axis radius (longitude)
-  radiusY: number; // Y-axis radius (latitude)
-  speed: number;   // Angular speed
-  angle: number;   // Current angle
-  centerLat: number; // Center of ellipse (latitude)
-  centerLng: number; // Center of ellipse (longitude)
-  clockwise: boolean; // Direction of movement
+  // Simple forward movement with slight curve
+  speed: number;    // Forward speed
+  direction: number; // Direction of movement in degrees (0-360)
+  startLat: number;  // Starting point latitude
+  startLng: number;  // Starting point longitude
+  distance: number;  // Total distance traveled so far
+  curvature: number; // How much the path curves (very slight)
 }
 
 interface Scenario {
@@ -66,21 +67,64 @@ interface MarkerPosition {
 
 
 
-// Define threat positions
-const threatPositions = [
-  { id: 't1', position: [24.5, 122.3], type: 'air', threat: 'high' },
-  { id: 't2', position: [23.2, 121.8], type: 'air', threat: 'medium' },
-  { id: 't3', position: [22.9, 120.5], type: 'air', threat: 'high' },
-  { id: 't4', position: [23.8, 120.2], type: 'ground', threat: 'medium' },
-  { id: 't5', position: [24.2, 121.2], type: 'air', threat: 'low' },
-  { id: 't6', position: [22.5, 121.5], type: 'ground', threat: 'high' }
+// Import entity simulation data
+import simulationData from '../assets/entity_simulation.json';
+
+// Get the first timestep entities
+const firstTimestepEntities = simulationData.Timesteps[0].entities;
+
+// Aircraft types for friendly and enemy entities
+const friendlyAircraftTypes = [
+  'F-35 Lightning II',
+  'F-22 Raptor',
+  'F-15EX Eagle II',
+  'F/A-18E Super Hornet',
+  'F-16 Fighting Falcon',
+  'A-10 Thunderbolt II'
 ];
 
-// Define flight paths
-const flightPathLines = [
-  { id: 'path1', positions: [[23.6978, 121.5605], [24.5, 122.3]], color: '#ffcc00' },
-  { id: 'path2', positions: [[24.1, 122.1], [23.2, 121.8]], color: '#ffcc00' }
+const enemyAircraftTypes = [
+  'J-20',
+  'Su-57',
+  'Su-35',
+  'J-16',
+  'J-10C',
+  'MiG-35'
 ];
+
+// Define threat positions using entity data from JSON file
+const threatPositions = firstTimestepEntities.map(entity => {
+  // Assign aircraft type based on entity ID and friendly status
+  const aircraftType = entity.friendly 
+    ? friendlyAircraftTypes[(entity.id - 1) % friendlyAircraftTypes.length]
+    : enemyAircraftTypes[(entity.id - 7) % enemyAircraftTypes.length];
+  
+  return {
+    id: `e${entity.id}`,
+    position: [entity.pos.y, entity.pos.x], // Note: Leaflet uses [lat, lng] format
+    type: 'air', // All are aircraft now
+    aircraftType: aircraftType,
+    threat: entity.attribution_score > 0.8 ? 'high' : 
+            entity.attribution_score > 0.6 ? 'medium' : 'low',
+    friendly: entity.friendly
+  };
+});
+
+// Define flight paths based on entity movements between first and last timestep
+const lastTimestepEntities = simulationData.Timesteps[simulationData.Timesteps.length - 1].entities;
+
+// Create flight paths for each entity showing movement from first to last position
+const flightPathLines = firstTimestepEntities.map(entity => {
+  const lastPosition = lastTimestepEntities.find(e => e.id === entity.id);
+  return {
+    id: `path${entity.id}`,
+    positions: [
+      [entity.pos.y, entity.pos.x], // Starting position [lat, lng]
+      [lastPosition ? lastPosition.pos.y : entity.pos.y, lastPosition ? lastPosition.pos.x : entity.pos.x] // Ending position
+    ],
+    color: entity.friendly ? '#00ff00' : '#ff0000' // Green for friendly, red for enemy
+  };
+});
 
 // Define multiple scenarios
 // Fighter jet types with their base characteristics
@@ -101,37 +145,100 @@ const fighterJetTypes = [
 const generateBattlefieldData = (center: [number, number], radius = 0.4): FighterJet[] => {
   const jets: FighterJet[] = [];
   
-  // Create 4 specific positions for the jets
+  // Create 12 specific positions for the jets with varied distances from center
   const positions = [
+    // Friendly Forces (6 aircraft)
     // Position 1 - North
     {
-      lat: center[0] + radius *3,
+      lat: center[0] + radius * 6,
       lng: center[1],
-      type: 'SU-57'
+      type: 'F-35 Lightning II',
+      friendly: true
     },
-    // Position 2 - East
+    // Position 2 - Northeast
+    {
+      lat: center[0] + radius * 5,
+      lng: center[1] + radius * 5,
+      type: 'F-22 Raptor',
+      friendly: true
+    },
+    // Position 3 - East
     {
       lat: center[0],
-      lng: center[1] + radius * 4,
-      type: 'J-20'
+      lng: center[1] + radius * 8,
+      type: 'F-15EX Eagle II',
+      friendly: true
     },
-    // Position 3 - South
+    // Position 4 - Southeast
+    {
+      lat: center[0] - radius * 5,
+      lng: center[1] + radius * 5,
+      type: 'F/A-18E Super Hornet',
+      friendly: true
+    },
+    // Position 5 - South-Southeast
+    {
+      lat: center[0] - radius * 10,
+      lng: center[1] + radius * 2,
+      type: 'F-16 Fighting Falcon',
+      friendly: true
+    },
+    // Position 6 - South
     {
       lat: center[0] - radius * 12,
       lng: center[1],
-      type: 'F-22'
+      type: 'A-10 Thunderbolt II',
+      friendly: true
     },
-    // Position 4 - West
+    
+    // Enemy Forces (6 aircraft)
+    // Position 7 - West
     {
       lat: center[0],
-      lng: center[1] - radius * 9,
-      type: 'SU-35'
+      lng: center[1] - radius * 15,
+      type: 'J-20',
+      friendly: false
+    },
+    // Position 8 - Northwest
+    {
+      lat: center[0] + radius * 5,
+      lng: center[1] - radius * 5,
+      type: 'Su-57',
+      friendly: false
+    },
+    // Position 9 - North-Northwest
+    {
+      lat: center[0] + radius * 10,
+      lng: center[1] - radius * 2,
+      type: 'Su-35',
+      friendly: false
+    },
+    // Position 10 - Southwest
+    {
+      lat: center[0] - radius * 5,
+      lng: center[1] - radius * 5,
+      type: 'J-16',
+      friendly: false
+    },
+    // Position 11 - South-Southwest
+    {
+      lat: center[0] - radius * 10,
+      lng: center[1] - radius * 2,
+      type: 'J-10C',
+      friendly: false
+    },
+    // Position 12 - West-Southwest
+    {
+      lat: center[0] - radius * 2,
+      lng: center[1] - radius * 10,
+      type: 'MiG-35',
+      friendly: false
     }
   ];
   
-  // Create exactly 4 jets at the predetermined positions
+  // Create exactly 12 jets at the predetermined positions
   positions.forEach((pos, index) => {
-    const jet = createSpecificJet(pos.lat, pos.lng, pos.type, index);
+    const jet = createSpecificJet(pos.lat, pos.lng, pos.type, index, pos.friendly);
     jets.push(jet);
   });
   
@@ -139,7 +246,7 @@ const generateBattlefieldData = (center: [number, number], radius = 0.4): Fighte
 };
 
 // Create a specific fighter jet with predetermined type
-const createSpecificJet = (lat: number, lng: number, jetType: string, index: number): FighterJet => {
+const createSpecificJet = (lat: number, lng: number, jetType: string, index: number, friendly: boolean = index < 6): FighterJet => {
   // Find the jet type in our types array
   const jetTypeData = fighterJetTypes.find(t => t.type === jetType) || fighterJetTypes[0];
   
@@ -149,22 +256,31 @@ const createSpecificJet = (lat: number, lng: number, jetType: string, index: num
   // Calculate strategic value based on threat and armament
   const strategicValue = Math.min(10, jetTypeData.baseThreat * 0.6 + jetTypeData.baseArmament * 0.4 + 1);
   
-  // Specific callsigns for the 4 jets
-  const callsigns = ['BONG', 'SATAN', 'SCAT', 'HOSS'];
+  // Specific callsigns for the jets
+  const callsigns = ['EAGLE', 'VIPER', 'RAPTOR', 'THUNDER', 'FALCON', 'WARTHOG', 
+                     'DRAGON', 'FLANKER', 'FOXHOUND', 'FELON', 'FIREBIRD', 'FULCRUM'];
+  
+  // For enemy jets, generate an attribution score (0-1)
+  // Higher values for more threatening enemies
+  const attribution = !friendly ? 
+    Math.min(1, Math.max(0, 0.4 + (jetTypeData.baseThreat / 10) * 0.6 + Math.random() * 0.2)) : 
+    undefined;
   
   return {
     id,
     lat,
     lng,
     type: jetType,
-    callsign: callsigns[index],
+    callsign: callsigns[index % callsigns.length],
     threatLevel: jetTypeData.baseThreat,
     armamentLevel: jetTypeData.baseArmament,
     strategicValue,
     altitude: 25000 + (index * 5000), // Different altitudes
     speed: 600 + (index * 100), // Different speeds
-    heading: index * 90, // Evenly spaced headings (0, 90, 180, 270)
-    lastUpdated: new Date()
+    heading: index * 30, // More varied headings
+    lastUpdated: new Date(),
+    friendly: friendly, // Set the friendly property explicitly
+    attribution: attribution // Add attribution score for enemy jets
   };
 };
 
@@ -218,9 +334,12 @@ function initializeAnimatedPoints(points: Point[]): AnimatedPoint[] {
     const latitudeRadians = point.lat * (Math.PI / 180);
     const longitudeCorrectionFactor = Math.cos(latitudeRadians);
     
-    // Create large elliptical patterns for planes
-    // Higher value aircraft get slightly larger patterns
-    const intensity = point.intensity || 0.5;
+    // Get point intensity or use default
+    // Determine if the point is a friendly aircraft
+    const isFriendly = 'friendly' in point ? (point as any).friendly : false;
+    
+    // Set intensity based on friendly status - this will affect the heat map color intensity
+    const intensity = isFriendly ? 0.7 : 0.8; // Slightly higher intensity for enemy aircraft
     
     // Convert km to degrees (approximately)
     // 1 degree of latitude is roughly 111 km
@@ -228,37 +347,31 @@ function initializeAnimatedPoints(points: Point[]): AnimatedPoint[] {
     const kmToLatDegrees = 1 / 111;
     const kmToLngDegrees = kmToLatDegrees / longitudeCorrectionFactor;
     
-    // Create elliptical orbit parameters for at least 100 km length
-    // For an ellipse, the perimeter is approximately 2π * sqrt((a² + b²)/2) where a and b are the semi-major and semi-minor axes
-    // To ensure at least 100 km length, we need to make the axes large enough
+    // Set speed for forward movement, slightly different for friendly vs enemy
+    // Friendly aircraft move slightly faster
+    const speed = isFriendly ? 
+      ((0.006 + (0.002 * intensity)) * 30) / 10 : 
+      ((0.004 + (0.002 * intensity)) * 30) / 10;
     
-    // Make major axis (longitude) significantly larger than minor axis (latitude) for elongated elliptical paths
-    // Base values ensure minimum 100 km perimeter
-    const minRadiusY = 0.45 * kmToLatDegrees; // ~50 km in latitude direction
-    const minRadiusX = 0.9 * kmToLngDegrees;  // ~100 km in longitude direction
+    // Each plane gets a different random direction (0-360 degrees)
+    // Spread them out in different directions
+    const direction = Math.random() * 360;
     
-    // Add some randomness to make each path unique
-    // Intensity affects the size - higher value aircraft get larger patterns
-    const radiusY = minRadiusY + (0.1 * intensity * kmToLatDegrees) + (Math.random() * 0.1 * kmToLatDegrees);
-    const radiusX = minRadiusX + (0.15 * intensity * kmToLngDegrees) + (Math.random() * 0.15 * kmToLngDegrees);
+    // Slight curvature for the path
+    // Small positive or negative value to determine if it curves left or right
+    // Increased slightly to be more noticeable with slower speeds
+    const curvature = (Math.random() * 0.002 - 0.001) * 30;
     
-    // Adjust speed for larger ellipses - slower for larger paths to maintain reasonable movement
-    const speed = 0.005 + (Math.random() * 0.003); // Slower for larger ellipses
-    
-    // Random starting angle and direction
-    const angle = Math.random() * Math.PI * 2;
-    const clockwise = Math.random() > 0.5;
-    
-    // Return the animated point with elliptical orbit parameters
+    // Return the animated point with forward movement parameters
     return {
       ...point,
-      centerLat: point.lat, // Center of ellipse
-      centerLng: point.lng,
-      radiusX,
-      radiusY,
+      startLat: point.lat,
+      startLng: point.lng,
       speed,
-      angle,
-      clockwise
+      direction,
+      curvature,
+      intensity, // Add the calculated intensity
+      distance: 0 // Start with zero distance traveled
     };
   });
 }
@@ -271,37 +384,64 @@ function normalizeAngle(angle: number): number {
 function useMovingHeatPoints(points: Point[]) {
   const [animatedPoints, setAnimatedPoints] = useState<Point[]>(points);
   const animatedPointsRef = useRef<AnimatedPoint[]>(initializeAnimatedPoints(points));
+  const timeStepRef = useRef<number>(0);
+  const maxTimeSteps = 100; // Set the maximum time steps to 100
 
   useEffect(() => {
     // Reset animated points when input points change
     animatedPointsRef.current = initializeAnimatedPoints(points);
+    timeStepRef.current = 0;
   }, [points]);
 
   useEffect(() => {
     const interval = setInterval(() => {
+      // Increment time step
+      timeStepRef.current += 1;
+      
       const newPoints = animatedPointsRef.current.map(point => {
-        // Update angle based on speed and direction
-        const newAngle = normalizeAngle(point.angle + (point.clockwise ? 1 : -1) * point.speed);
+        // If we've reached the maximum time steps, don't move the point anymore
+        if (timeStepRef.current >= maxTimeSteps) {
+          // Return the point at its final position
+          return {
+            ...point,
+            distance: point.distance // Keep the distance at final value
+          };
+        }
         
-        // Calculate new position on the ellipse
-        const newLat = point.centerLat + point.radiusY * Math.sin(newAngle);
-        const newLng = point.centerLng + point.radiusX * Math.cos(newAngle);
+        // Increase distance traveled based on speed
+        const newDistance = point.distance + point.speed;
         
-        // Calculate heading based on direction of movement
-        // Use the derivative of the parametric equation of the ellipse to get tangent direction
-        const dx = -point.radiusX * Math.sin(newAngle) * (point.clockwise ? -1 : 1);
-        const dy = point.radiusY * Math.cos(newAngle) * (point.clockwise ? -1 : 1);
-        const heading = Math.atan2(dx, dy) * (180 / Math.PI);
+        // Convert direction from degrees to radians
+        const directionRad = point.direction * (Math.PI / 180);
         
-        // Update the point's angle for next iteration
-        point.angle = newAngle;
+        // Calculate the curved path
+        // As distance increases, the curvature gradually changes the direction
+        const curvedDirectionRad = directionRad + (point.curvature * newDistance);
+        
+        // Calculate movement vector based on the curved direction
+        const dx = Math.cos(curvedDirectionRad) * point.speed;
+        const dy = Math.sin(curvedDirectionRad) * point.speed;
+        
+        // Calculate new position based on straight-line distance plus curve
+        const newLng = point.startLng + Math.cos(directionRad) * newDistance + 
+                     // Additional offset from curvature
+                     Math.sin(directionRad) * point.curvature * newDistance * newDistance * 0.5;
+        const newLat = point.startLat + Math.sin(directionRad) * newDistance - 
+                     // Additional offset from curvature
+                     Math.cos(directionRad) * point.curvature * newDistance * newDistance * 0.5;
+        
+        // Calculate heading based on the curved direction
+        const heading = (curvedDirectionRad * (180 / Math.PI) + 360) % 360;
+        
+        // Update the point's distance for next iteration
+        point.distance = newDistance;
         
         // If this is a FighterJet, preserve its properties
         if ('type' in point && 'strategicValue' in point) {
           const jet = point as unknown as FighterJet;
           return {
             ...jet,
-            ...point, // Keep elliptical orbit properties
+            ...point, // Keep orbit properties
             lat: newLat,
             lng: newLng,
             heading: heading,
@@ -321,7 +461,7 @@ function useMovingHeatPoints(points: Point[]) {
 
       animatedPointsRef.current = newPoints;
       setAnimatedPoints(newPoints);
-    }, 50); // Faster update interval for more visible movement
+    }, 200); // Maximum interval for extremely slow, smooth movement
 
     return () => clearInterval(interval);
   }, []);
@@ -336,8 +476,8 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
   useEffect(() => {
     // Create markers for each jet
     const markers = jets.map(jet => {
-      // Create a custom icon based on strategic value
-      const icon = createJetIcon(jet.strategicValue);
+      // Create a custom icon based on jet properties
+      const icon = createJetIcon(jet, 24, jet.heading);
       
       // Create marker
       const marker = L.marker([jet.lat, jet.lng], { icon }).addTo(map);
@@ -346,11 +486,13 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
       marker.bindTooltip(
         `<div class="fighter-jet-tooltip">
           <strong>${jet.type} - ${jet.callsign || ''}</strong><br/>
+          ${jet.friendly ? '<span class="friendly-tag">FRIENDLY</span>' : '<span class="enemy-tag">ENEMY</span>'}<br/>
           Threat: ${jet.threatLevel.toFixed(1)}/10<br/>
           Armament: ${jet.armamentLevel.toFixed(1)}/10<br/>
+          ${!jet.friendly && jet.attribution !== undefined ? `Attribution: ${(jet.attribution * 100).toFixed(1)}%<br/>` : ''}
           Alt: ${jet.altitude.toLocaleString()} ft<br/>
           Speed: ${jet.speed} kts<br/>
-          Heading: ${jet.heading}°
+          Heading: ${jet.heading.toFixed(1)}°
         </div>`,
         { className: 'fighter-jet-tooltip' }
       );
@@ -364,19 +506,35 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
     };
   }, [map, jets]);
   
-  // Create a custom icon for fighter jets
-  function createJetIcon(strategicValue: number, size: number = 24) {
-    // Determine color based on strategic value
+  // Create a custom icon for fighter jets with rotation
+  function createJetIcon(jet: FighterJet, size: number = 24, heading: number = 0) {
+    // Determine color based on friendly status or attribution value
     const getColor = () => {
-      if (strategicValue >= 8) return '#FF3B30'; // High value - red
-      if (strategicValue >= 6) return '#FF9500'; // Medium-high value - orange
-      if (strategicValue >= 4) return '#FFCC00'; // Medium value - yellow
-      return '#34C759'; // Low value - green
+      // Check if the jet has a friendly property
+      if (jet.friendly) {
+        return '#0080FF'; // Blue for friendly
+      } else {
+        // For enemy aircraft, use attribution-based coloring
+        if (jet.attribution !== undefined) {
+          if (jet.attribution >= 0.8) return '#FF0000'; // High attribution - bright red
+          if (jet.attribution >= 0.6) return '#FF4500'; // Medium-high attribution - orange-red
+          if (jet.attribution >= 0.4) return '#FF8C00'; // Medium attribution - dark orange
+          return '#FFA500'; // Low attribution - orange
+        } else {
+          // Fallback to strategic value if attribution isn't available
+          if (jet.strategicValue >= 8) return '#FF3B30'; // High value - red
+          if (jet.strategicValue >= 6) return '#FF9500'; // Medium-high value - orange
+          if (jet.strategicValue >= 4) return '#FFCC00'; // Medium value - yellow
+          return '#34C759'; // Low value - green
+        }
+      }
     };
     
     const color = getColor();
     
-    // Create a custom fighter jet icon that looks like a plane
+    // Set rotation to 0 as requested
+    const rotation = 0;
+    
     return L.divIcon({
       className: 'fighter-jet-icon',
       html: `<div style="
@@ -386,6 +544,8 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
         background-size: contain; 
         background-repeat: no-repeat;
         filter: drop-shadow(0 0 2px rgba(0,0,0,0.7)) drop-shadow(0 0 4px ${color});
+        transform: rotate(${rotation}deg);
+        transform-origin: center;
       "></div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12]
@@ -432,35 +592,123 @@ function HeatMapLayer({ points }: { points: Point[] }) {
     if (!map || !mapReady || animatedPoints.length === 0) return;
     
     try {
-      const formattedPoints = animatedPoints.map(point => [
-        point.lat,
-        point.lng,
-        point.intensity || 1
-      ]);
-
-      const heatLayer = L.heatLayer(formattedPoints as [number, number, number][], {
-        radius: 55,       // Smaller radius for more defined individual points
-        blur: 25,         // Less blur to prevent overlap between dispersed points
-        maxZoom: 10,
-        minOpacity: 0.2,  // Slightly higher minimum opacity
-        max: 1.0,         // Full intensity range
-        gradient: {
-          0.0: 'rgba(0, 0, 255, 0.2)',     // Low value - blue (minimal threat)
-          0.3: 'rgba(0, 255, 255, 0.5)',   // Low-medium value - cyan
-          0.5: 'rgba(0, 255, 0, 0.6)',     // Medium value - green
-          0.7: 'rgba(255, 255, 0, 0.7)',   // Medium-high value - yellow
-          0.8: 'rgba(255, 165, 0, 0.8)',   // High value - orange
-          0.9: 'rgba(255, 69, 0, 0.9)',    // Very high value - red-orange
-          1.0: 'rgba(255, 0, 0, 1.0)'      // Maximum value - bright red (critical threat)
+      // Separate friendly and enemy points for different colors
+      const friendlyPoints: [number, number, number][] = [];
+      const enemyPoints: [number, number, number][] = [];
+      
+      // Create a separate array for attribution-based heat map
+      const attributionPoints: [number, number, number][] = [];
+      
+      // Process each point and categorize as friendly or enemy
+      animatedPoints.forEach(point => {
+        // Check if the point has fighter jet properties
+        if ('type' in point && 'heading' in point) {
+          const jet = point as FighterJet;
+          
+          // Create the formatted point for friendly/enemy categorization
+          const formattedPoint: [number, number, number] = [
+            point.lat,
+            point.lng,
+            point.intensity || 1
+          ];
+          
+          // Add to the appropriate array
+          if (jet.friendly) {
+            friendlyPoints.push(formattedPoint);
+          } else {
+            enemyPoints.push(formattedPoint);
+            
+            // For enemy jets with attribution, add to the attribution heat map
+            if (jet.attribution !== undefined) {
+              attributionPoints.push([
+                point.lat,
+                point.lng,
+                jet.attribution // Use attribution as intensity
+              ]);
+            }
+          }
+        } else {
+          // For regular points, add based on intensity
+          const formattedPoint: [number, number, number] = [
+            point.lat,
+            point.lng,
+            point.intensity || 1
+          ];
+          
+          // Check if the point has a 'friendly' property
+          const isFriendly = 'friendly' in point ? (point as any).friendly : false;
+          
+          if (isFriendly) {
+            friendlyPoints.push(formattedPoint);
+          } else {
+            enemyPoints.push(formattedPoint);
+          }
         }
       });
+      
+      // Create a blue heat layer for friendly aircraft
+      if (friendlyPoints.length > 0) {
+        const friendlyHeatLayer = L.heatLayer(friendlyPoints, {
+          radius: 55,
+          blur: 25,
+          maxZoom: 10,
+          minOpacity: 0.2,
+          max: 1.0,
+          gradient: {
+            0.0: 'rgba(0, 0, 255, 0.2)',    // Light blue
+            0.5: 'rgba(30, 144, 255, 0.6)',  // Medium blue
+            1.0: 'rgba(0, 0, 128, 1.0)'      // Dark blue
+          }
+        });
+        friendlyHeatLayer.addTo(map);
+      }
+      
+      // Create a red heat layer for enemy aircraft
+      if (enemyPoints.length > 0) {
+        const enemyHeatLayer = L.heatLayer(enemyPoints, {
+          radius: 55,
+          blur: 25,
+          maxZoom: 10,
+          minOpacity: 0.2,
+          max: 1.0,
+          gradient: {
+            0.0: 'rgba(255, 0, 0, 0.2)',     // Light red
+            0.5: 'rgba(220, 20, 60, 0.6)',    // Medium red
+            1.0: 'rgba(139, 0, 0, 1.0)'       // Dark red
+          }
+        });
+        enemyHeatLayer.addTo(map);
+      }
+      
+      // Create a separate attribution-based heat layer for enemy aircraft
+      if (attributionPoints.length > 0) {
+        const attributionHeatLayer = L.heatLayer(attributionPoints, {
+          radius: 85, // Larger radius to show attribution influence area
+          blur: 35,   // More blur for smoother gradient
+          maxZoom: 10,
+          minOpacity: 0.3,
+          max: 1.0,
+          gradient: {
+            0.0: 'rgba(255, 255, 0, 0.2)',    // Light yellow
+            0.3: 'rgba(255, 165, 0, 0.4)',    // Orange
+            0.6: 'rgba(255, 69, 0, 0.6)',     // Red-orange
+            0.8: 'rgba(255, 0, 0, 0.7)',      // Bright red
+            1.0: 'rgba(128, 0, 0, 0.8)'       // Dark red
+          }
+        });
+        attributionHeatLayer.addTo(map);
+      }
 
       // Force map invalidation to ensure proper sizing
       map.invalidateSize();
-      heatLayer.addTo(map);
 
       return () => {
-        map.removeLayer(heatLayer);
+        // Remove all heat layers
+        map.eachLayer(layer => {
+          if (layer instanceof L.HeatLayer) {
+            map.removeLayer(layer);
+          }
+        });
       };
     } catch (error) {
       console.error("Error creating heat layer:", error);
@@ -481,6 +729,25 @@ function HeatMapLayer({ points }: { points: Point[] }) {
       }
       .fighter-jet-tooltip strong {
         color: #FF3B30;
+        font-size: 1.1em;
+      }
+      .friendly-tag {
+        display: inline-block;
+        background-color: #0080FF;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8em;
+        font-weight: bold;
+      }
+      .enemy-tag {
+        display: inline-block;
+        background-color: #FF0000;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.8em;
+        font-weight: bold;
       }
     `;
     document.head.appendChild(style);
