@@ -437,42 +437,73 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
 function HeatMapLayer({ points }: { points: Point[] }) {
   const map = useMap();
   const animatedPoints = useMovingHeatPoints(points);
+  const [mapReady, setMapReady] = useState(false);
   
   // Cast the animated points to FighterJet[] if they are fighter jets
   const fighterJets = animatedPoints.filter(point => 
     'type' in point && 'heading' in point
   ) as FighterJet[];
 
+  // Ensure map is fully initialized before adding layers
   useEffect(() => {
-    const formattedPoints = animatedPoints.map(point => [
-      point.lat,
-      point.lng,
-      point.intensity || 1
-    ]);
-
-    const heatLayer = L.heatLayer(formattedPoints as [number, number, number][], {
-      radius: 35,       // Smaller radius for more defined individual points
-      blur: 25,         // Less blur to prevent overlap between dispersed points
-      maxZoom: 10,
-      minOpacity: 0.2,  // Slightly higher minimum opacity
-      max: 1.0,         // Full intensity range
-      gradient: {
-        0.0: 'rgba(0, 0, 255, 0.2)',     // Low value - blue (minimal threat)
-        0.3: 'rgba(0, 255, 255, 0.5)',   // Low-medium value - cyan
-        0.5: 'rgba(0, 255, 0, 0.6)',     // Medium value - green
-        0.7: 'rgba(255, 255, 0, 0.7)',   // Medium-high value - yellow
-        0.8: 'rgba(255, 165, 0, 0.8)',   // High value - orange
-        0.9: 'rgba(255, 69, 0, 0.9)',    // Very high value - red-orange
-        1.0: 'rgba(255, 0, 0, 1.0)'      // Maximum value - bright red (critical threat)
-      }
-    });
-
-    heatLayer.addTo(map);
-
-    return () => {
-      map.removeLayer(heatLayer);
+    if (!map) return;
+    
+    // Wait for map to be ready
+    const handleMapReady = () => {
+      setMapReady(true);
     };
-  }, [map, animatedPoints]);
+    
+    map.whenReady(handleMapReady);
+    
+    // Also set ready after a small delay as a fallback
+    const timeout = setTimeout(() => {
+      setMapReady(true);
+    }, 500);
+    
+    return () => {
+      clearTimeout(timeout);
+      map.off('ready', handleMapReady);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (!map || !mapReady || animatedPoints.length === 0) return;
+    
+    try {
+      const formattedPoints = animatedPoints.map(point => [
+        point.lat,
+        point.lng,
+        point.intensity || 1
+      ]);
+
+      const heatLayer = L.heatLayer(formattedPoints as [number, number, number][], {
+        radius: 35,       // Smaller radius for more defined individual points
+        blur: 25,         // Less blur to prevent overlap between dispersed points
+        maxZoom: 10,
+        minOpacity: 0.2,  // Slightly higher minimum opacity
+        max: 1.0,         // Full intensity range
+        gradient: {
+          0.0: 'rgba(0, 0, 255, 0.2)',     // Low value - blue (minimal threat)
+          0.3: 'rgba(0, 255, 255, 0.5)',   // Low-medium value - cyan
+          0.5: 'rgba(0, 255, 0, 0.6)',     // Medium value - green
+          0.7: 'rgba(255, 255, 0, 0.7)',   // Medium-high value - yellow
+          0.8: 'rgba(255, 165, 0, 0.8)',   // High value - orange
+          0.9: 'rgba(255, 69, 0, 0.9)',    // Very high value - red-orange
+          1.0: 'rgba(255, 0, 0, 1.0)'      // Maximum value - bright red (critical threat)
+        }
+      });
+
+      // Force map invalidation to ensure proper sizing
+      map.invalidateSize();
+      heatLayer.addTo(map);
+
+      return () => {
+        map.removeLayer(heatLayer);
+      };
+    } catch (error) {
+      console.error("Error creating heat layer:", error);
+    }
+  }, [map, mapReady, animatedPoints]);
 
   // Add custom CSS for tooltips
   useEffect(() => {
@@ -544,14 +575,63 @@ export default function HeatMap({ center, zoom }: HeatMapProps) {
   const [activeTab, setActiveTab] = useState(0);
   const currentScenario = scenarios[activeTab];
   const markerData = useMovingMarker(currentScenario.markerCenter);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  // Ensure we have CSS for the map container
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .leaflet-container {
+        width: 100%;
+        height: 100%;
+        min-height: 300px;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Force re-render when the component's parent size changes
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      if (mapContainerRef.current) {
+        // This triggers a re-render
+        mapContainerRef.current.style.display = 'none';
+        setTimeout(() => {
+          if (mapContainerRef.current) {
+            mapContainerRef.current.style.display = 'block';
+          }
+        }, 0);
+      }
+    });
+    
+    if (mapContainerRef.current) {
+      observer.observe(mapContainerRef.current);
+    }
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div 
+      ref={mapContainerRef}
+      style={{ 
+        position: 'relative', 
+        height: '100%', 
+        minHeight: '300px',
+        width: '100%'
+      }}
+    >
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <MapContainer
         center={currentScenario.markerCenter}
         zoom={zoom}
         className="leaflet-container"
+        style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
