@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, CircleMarker, Polyline, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat';
@@ -26,6 +26,7 @@ interface Point {
 interface FighterJet extends Point {
   id: string;
   type: string;
+  callsign?: string; // Added callsign property
   threatLevel: number;  // 1-10 scale
   armamentLevel: number; // 1-10 scale
   strategicValue: number; // 1-10 scale, calculated from other attributes
@@ -70,6 +71,22 @@ const triangleIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
+// Define threat positions
+const threatPositions = [
+  { id: 't1', position: [24.5, 122.3], type: 'air', threat: 'high' },
+  { id: 't2', position: [23.2, 121.8], type: 'air', threat: 'medium' },
+  { id: 't3', position: [22.9, 120.5], type: 'air', threat: 'high' },
+  { id: 't4', position: [23.8, 120.2], type: 'ground', threat: 'medium' },
+  { id: 't5', position: [24.2, 121.2], type: 'air', threat: 'low' },
+  { id: 't6', position: [22.5, 121.5], type: 'ground', threat: 'high' }
+];
+
+// Define flight paths
+const flightPathLines = [
+  { id: 'path1', positions: [[23.6978, 121.5605], [24.5, 122.3]], color: '#ffcc00' },
+  { id: 'path2', positions: [[24.1, 122.1], [23.2, 121.8]], color: '#ffcc00' }
+];
+
 // Define multiple scenarios
 // Fighter jet types with their base characteristics
 const fighterJetTypes = [
@@ -85,107 +102,74 @@ const fighterJetTypes = [
   { type: 'J-7', baseThreat: 3, baseArmament: 4 }
 ];
 
-// Generate battlefield data with enemy fighter jets
-const generateBattlefieldData = (center: [number, number], count = 15, radius = 0.02): FighterJet[] => {
+// Generate battlefield data with exactly 4 enemy fighter jets
+const generateBattlefieldData = (center: [number, number], radius = 0.02): FighterJet[] => {
   const jets: FighterJet[] = [];
   
-  // Create multiple formations instead of just one at the center
-  // Define 3-4 formation centers within the sector
-  const formationCount = 3 + Math.floor(Math.random() * 2); // 3 or 4 formations
-  const formations = [];
+  // Create 4 specific positions for the jets
+  const positions = [
+    // Position 1 - North
+    {
+      lat: center[0] + radius * 0.7,
+      lng: center[1],
+      type: 'SU-57'
+    },
+    // Position 2 - East
+    {
+      lat: center[0],
+      lng: center[1] + radius * 0.7,
+      type: 'J-20'
+    },
+    // Position 3 - South
+    {
+      lat: center[0] - radius * 0.7,
+      lng: center[1],
+      type: 'F-22'
+    },
+    // Position 4 - West
+    {
+      lat: center[0],
+      lng: center[1] - radius * 0.7,
+      type: 'SU-35'
+    }
+  ];
   
-  // Create formation centers
-  for (let i = 0; i < formationCount; i++) {
-    // Distribute formation centers evenly within the sector
-    const formationAngle = (i * 2 * Math.PI / formationCount) + (Math.random() * 0.5);
-    const formationDistance = 0.01 + (Math.random() * (radius * 0.7));
-    
-    formations.push({
-      lat: center[0] + formationDistance * Math.cos(formationAngle),
-      lng: center[1] + formationDistance * Math.sin(formationAngle)
-    });
-  }
-  
-  // Add a high-value jet to each formation center
-  formations.forEach(formation => {
-    const highValueJet = createHighValueJet(formation.lat, formation.lng);
-    jets.push(highValueJet);
-  });
-  
-  // Distribute remaining jets around the formations
-  const remainingCount = count - formations.length;
-  for (let i = 0; i < remainingCount; i++) {
-    // Pick a random formation to associate with
-    const formation = formations[Math.floor(Math.random() * formations.length)];
-    
-    // Distribute around the formation with some randomness
-    const angle = Math.random() * Math.PI * 2;
-    const distance = 0.005 + Math.random() * (radius * 0.4); // Minimum distance from formation center
-    
-    const lat = formation.lat + distance * Math.cos(angle);
-    const lng = formation.lng + distance * Math.sin(angle);
-    
-    // Create a fighter jet with random attributes
-    const jet = createRandomJet(lat, lng);
+  // Create exactly 4 jets at the predetermined positions
+  positions.forEach((pos, index) => {
+    const jet = createSpecificJet(pos.lat, pos.lng, pos.type, index);
     jets.push(jet);
-  }
+  });
   
   return jets;
 };
 
-// Create a high-value fighter jet (for center of formations)
-const createHighValueJet = (lat: number, lng: number): FighterJet => {
-  // Choose one of the top-tier fighter types
-  const jetType = fighterJetTypes.slice(0, 3)[Math.floor(Math.random() * 3)];
+// Create a specific fighter jet with predetermined type
+const createSpecificJet = (lat: number, lng: number, jetType: string, index: number): FighterJet => {
+  // Find the jet type in our types array
+  const jetTypeData = fighterJetTypes.find(t => t.type === jetType) || fighterJetTypes[0];
   
-  // Add some randomness but keep values high
-  const threatLevel = Math.min(10, jetType.baseThreat + Math.random());
-  const armamentLevel = Math.min(10, jetType.baseArmament + Math.random());
-  
-  // Calculate strategic value (higher than normal)
-  const strategicValue = Math.min(10, (threatLevel + armamentLevel) / 2 + 1);
-  
-  return {
-    id: `HVT-${Math.floor(Math.random() * 1000)}`,
-    lat,
-    lng,
-    type: jetType.type,
-    threatLevel,
-    armamentLevel,
-    strategicValue,
-    altitude: 25000 + Math.floor(Math.random() * 15000),
-    speed: 400 + Math.floor(Math.random() * 600),
-    heading: Math.floor(Math.random() * 360),
-    lastUpdated: new Date(),
-    intensity: strategicValue / 10 // Normalize to 0-1 for heatmap
-  };
-};
-
-// Create a random fighter jet with varying attributes
-const createRandomJet = (lat: number, lng: number): FighterJet => {
-  // Choose a random fighter type
-  const jetType = fighterJetTypes[Math.floor(Math.random() * fighterJetTypes.length)];
-  
-  // Add some randomness to the base values
-  const threatLevel = Math.max(1, Math.min(10, jetType.baseThreat + (Math.random() * 2 - 1)));
-  const armamentLevel = Math.max(1, Math.min(10, jetType.baseArmament + (Math.random() * 2 - 1)));
+  // Generate a unique ID
+  const id = `jet-${index}`;
   
   // Calculate strategic value based on threat and armament
-  const strategicValue = Math.max(1, Math.min(10, (threatLevel + armamentLevel) / 2));
+  const strategicValue = Math.min(10, jetTypeData.baseThreat * 0.6 + jetTypeData.baseArmament * 0.4 + 1);
+  
+  // Specific callsigns for the 4 jets
+  const callsigns = ['BONG', 'SATAN', 'SCAT', 'HOSS'];
   
   return {
-    id: `FJ-${Math.floor(Math.random() * 10000)}`,
+    id,
     lat,
     lng,
-    type: jetType.type,
-    threatLevel,
-    armamentLevel,
+    type: jetType,
+    callsign: callsigns[index],
+    threatLevel: jetTypeData.baseThreat,
+    armamentLevel: jetTypeData.baseArmament,
     strategicValue,
-    altitude: 10000 + Math.floor(Math.random() * 30000),
-    speed: 300 + Math.floor(Math.random() * 700),
-    heading: Math.floor(Math.random() * 360),
-    lastUpdated: new Date(),
-    intensity: strategicValue / 10 // Normalize to 0-1 for heatmap
+    altitude: 25000 + (index * 5000), // Different altitudes
+    speed: 600 + (index * 100), // Different speeds
+    heading: index * 90, // Evenly spaced headings (0, 90, 180, 270)
+    lastUpdated: new Date()
   };
 };
 
@@ -193,22 +177,22 @@ const scenarios: Scenario[] = [
   {
     name: "Northern Taiwan",
     markerCenter: [25.047, 121.532], // Taipei area
-    heatmapPoints: generateBattlefieldData([25.047, 121.532], 20, 0.06) // Increased radius for more dispersion
+    heatmapPoints: generateBattlefieldData([25.047, 121.532], 0.06) // 4 planes with spacing
   },
   {
     name: "Eastern Taiwan",
     markerCenter: [23.993, 121.601], // Hualien area
-    heatmapPoints: generateBattlefieldData([23.993, 121.601], 18, 0.05) // Medium radius
+    heatmapPoints: generateBattlefieldData([23.993, 121.601], 0.05) // 4 planes with spacing
   },
   {
     name: "Southern Taiwan",
     markerCenter: [22.997, 120.212], // Tainan area
-    heatmapPoints: generateBattlefieldData([22.997, 120.212], 22, 0.065) // Increased radius for more dispersion
+    heatmapPoints: generateBattlefieldData([22.997, 120.212], 0.065) // 4 planes with spacing
   },
   {
     name: "Taiwan Strait",
     markerCenter: [24.150, 119.500], // Taiwan Strait
-    heatmapPoints: generateBattlefieldData([24.150, 119.500], 25, 0.07) // Larger area for strait coverage
+    heatmapPoints: generateBattlefieldData([24.150, 119.500], 0.07) // 4 planes with spacing
   }
 ];
 
@@ -369,73 +353,65 @@ function useMovingHeatPoints(points: Point[]) {
 // Aircraft icon component that displays fighter jets on the map
 function AircraftIcons({ jets }: { jets: FighterJet[] }) {
   const map = useMap();
-  const [markers, setMarkers] = useState<L.Marker[]>([]);
-
-  // Create a custom icon for fighter jets
-  const createJetIcon = (strategicValue: number) => {
-    // Scale icon size based on strategic value (more important = slightly larger)
-    const size = 16 + Math.floor(strategicValue * 1.2);
-    
-    // Color based on jet type/value
-    let color = '#FFFFFF';
-    if (strategicValue > 8) color = '#FF3B30'; // High value - red
-    else if (strategicValue > 6) color = '#FF9500'; // Medium-high value - orange
-    else if (strategicValue > 4) color = '#FFCC00'; // Medium value - yellow
-    
-    return L.divIcon({
-      className: 'fighter-jet-icon',
-      html: `<div style="
-        width: ${size}px; 
-        height: ${size}px; 
-        background-image: url('/images/fighter-jet.svg'); 
-        background-size: contain; 
-        background-repeat: no-repeat;
-        filter: drop-shadow(0 0 2px rgba(0,0,0,0.7)) drop-shadow(0 0 4px ${color});
-      "></div>`,
-      iconSize: [size, size],
-      iconAnchor: [size/2, size/2]
-    });
-  };
-
+  
   useEffect(() => {
-    // Remove existing markers
-    markers.forEach(marker => map.removeLayer(marker));
-    
-    // Create new markers for each jet
-    const newMarkers = jets.map(jet => {
+    // Create markers for each jet
+    const markers = jets.map(jet => {
+      // Create a custom icon based on strategic value
       const icon = createJetIcon(jet.strategicValue);
-      const marker = L.marker([jet.lat, jet.lng], { icon }).addTo(map);
       
-      // Rotate according to heading
-      const markerElement = marker.getElement();
-      if (markerElement) {
-        const iconDiv = markerElement.querySelector('div');
-        if (iconDiv) {
-          iconDiv.style.transform = `rotate(${jet.heading}deg)`;
-        }
-      }
+      // Create marker
+      const marker = L.marker([jet.lat, jet.lng], { icon }).addTo(map);
       
       // Add tooltip with jet information
       marker.bindTooltip(
-        `<strong>${jet.type}</strong><br>
-         ID: ${jet.id}<br>
-         Threat Level: ${jet.threatLevel.toFixed(1)}/10<br>
-         Armament: ${jet.armamentLevel.toFixed(1)}/10<br>
-         Altitude: ${jet.altitude.toLocaleString()} ft<br>
-         Speed: ${jet.speed.toLocaleString()} knots`,
+        `<div class="fighter-jet-tooltip">
+          <strong>${jet.type} - ${jet.callsign || ''}</strong><br/>
+          Threat: ${jet.threatLevel.toFixed(1)}/10<br/>
+          Armament: ${jet.armamentLevel.toFixed(1)}/10<br/>
+          Alt: ${jet.altitude.toLocaleString()} ft<br/>
+          Speed: ${jet.speed} kts<br/>
+          Heading: ${jet.heading}°
+        </div>`,
         { className: 'fighter-jet-tooltip' }
       );
       
       return marker;
     });
     
-    setMarkers(newMarkers);
-    
+    // Cleanup function
     return () => {
-      newMarkers.forEach(marker => map.removeLayer(marker));
+      markers.forEach(marker => marker.remove());
     };
   }, [map, jets]);
-
+  
+  // Create a custom icon for fighter jets
+  function createJetIcon(strategicValue: number) {
+    // Determine color based on strategic value
+    const getColor = () => {
+      if (strategicValue >= 8) return '#FF3B30'; // High value - red
+      if (strategicValue >= 6) return '#FF9500'; // Medium-high value - orange
+      if (strategicValue >= 4) return '#FFCC00'; // Medium value - yellow
+      return '#34C759'; // Low value - green
+    };
+    
+    const color = getColor();
+    
+    // Create a custom fighter jet icon
+    return L.divIcon({
+      className: 'fighter-jet-icon',
+      html: `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 14H20L12 2Z" fill="${color}" stroke="#000" stroke-width="1"/>
+          <path d="M12 14L8 22H16L12 14Z" fill="${color}" stroke="#000" stroke-width="1"/>
+        </svg>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+  }
+  
+  // Component must return something for React
   return null;
 }
 
@@ -535,7 +511,83 @@ function HeatMapLayer({ points }: { points: Point[] }) {
   return (
     <>
       <AircraftIcons jets={fighterJets} />
+      
+      {/* Render threat markers */}
+      {threatPositions.map((threat) => (
+        <CircleMarker
+          key={threat.id}
+          center={threat.position as [number, number]}
+          radius={10}
+          pathOptions={{
+            color: threat.threat === 'high' ? '#f56565' : 
+                   threat.threat === 'medium' ? '#ed8936' : '#ecc94b',
+            fillColor: threat.threat === 'high' ? '#f56565' : 
+                       threat.threat === 'medium' ? '#ed8936' : '#ecc94b',
+            fillOpacity: 0.5
+          }}
+        >
+          <Popup>
+            Threat Level: {threat.threat}<br />
+            Type: {threat.type}
+          </Popup>
+        </CircleMarker>
+      ))}
+      
+      {/* Render flight paths */}
+      {flightPathLines.map((path) => (
+        <Polyline
+          key={path.id}
+          positions={path.positions as [number, number][]}
+          pathOptions={{ color: path.color, weight: 3, dashArray: '5, 5' }}
+        />
+      ))}
     </>
+  );
+}
+
+// Custom zoom controls component that properly accesses the Leaflet map
+function ZoomControls() {
+  const map = useMap();
+  
+  return (
+    <div className="map-controls" style={{
+      position: 'absolute',
+      right: '10px',
+      top: '10px',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '5px'
+    }}>
+      <button 
+        className="map-control-button" 
+        style={{
+          width: '30px',
+          height: '30px',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '18px'
+        }}
+        onClick={() => map.setZoom(map.getZoom() + 1)}
+      >+</button>
+      <button 
+        className="map-control-button"
+        style={{
+          width: '30px',
+          height: '30px',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '18px'
+        }}
+        onClick={() => map.setZoom(map.getZoom() - 1)}
+      >-</button>
+    </div>
   );
 }
 
@@ -576,11 +628,17 @@ function Tabs({ activeTab, setActiveTab }: { activeTab: number, setActiveTab: (i
   );
 }
 
-export default function HeatMap({ center = [23.6978, 120.9605], zoom = 8 }: HeatMapProps) { // Default center to Taiwan's geographic center
+export default function HeatMap({ zoom = 8 }: HeatMapProps) { // Default zoom level
   const [activeTab, setActiveTab] = useState(0);
+  const [routing, setRouting] = useState<boolean>(false);
   const currentScenario = scenarios[activeTab];
   const markerData = useMovingMarker(currentScenario.markerCenter);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Toggle routing mode
+  const toggleRouting = (): void => {
+    setRouting(!routing);
+  };
 
   // Ensure we have CSS for the map container
   useEffect(() => {
@@ -632,6 +690,59 @@ export default function HeatMap({ center = [23.6978, 120.9605], zoom = 8 }: Heat
       }}
     >
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      {/* Routing controls */}
+      <div style={{
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        padding: '8px 16px',
+        borderRadius: '5px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        color: 'white',
+        fontWeight: 'bold'
+      }}>
+        <button
+          style={{
+            width: '36px',
+            height: '36px',
+            backgroundColor: routing ? '#4299e1' : '#2d3748',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            fontSize: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onClick={toggleRouting}
+        >
+          ⚙
+        </button>
+        <div>ROUTING {routing ? 'ON' : 'OFF'}</div>
+        <button style={{
+          width: '36px',
+          height: '36px',
+          backgroundColor: '#2d3748',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          fontSize: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          ⟲
+        </button>
+      </div>
+      
       <MapContainer
         center={currentScenario.markerCenter}
         zoom={zoom}
@@ -640,6 +751,22 @@ export default function HeatMap({ center = [23.6978, 120.9605], zoom = 8 }: Heat
         maxBounds={[[21.5, 118.0], [26.5, 123.0]]} // Restrict panning to Taiwan area
         minZoom={7} // Prevent zooming out too far
       >
+        {/* Add map controls */}
+        <div style={{
+          position: 'absolute',
+          top: '10px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#f6ad55',
+          color: '#000',
+          padding: '2px 8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          fontWeight: 'bold',
+          zIndex: 1000
+        }}>⚠ SIMULATION ONLY</div>
+        <ZoomControls />
+
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.maptiler.com/">MapTiler</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
