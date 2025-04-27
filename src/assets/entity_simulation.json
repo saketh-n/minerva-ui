@@ -1,0 +1,1346 @@
+{
+  "Application": "FlagFrenzy",
+  "Name": "Taiwan Waters Simulation",
+  "RandomSeed": 34501,
+  "Timesteps": [
+    {
+      "time": 0,
+      "action": 0,
+      "message": {
+        "vehicle_type": "LCS",
+        "call_sign": "FREEDOM",
+        "action": "surveillance",
+        "explanation": "LCS FREEDOM positioned southwest of Taipei to establish perimeter monitoring of PLA Navy vessels encroaching on Taiwan's maritime zone",
+        "category": "Good"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.74046557934068,
+            "y": 23.489631842183655,
+            "z": 7.6964931714178535
+          },
+          "friendly": true,
+          "attribution_score": 0.82
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93767961697081,
+            "y": 23.636193000941823,
+            "z": 8.068008942581512
+          },
+          "friendly": true,
+          "attribution_score": 0.74
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.8363453652202,
+            "y": 23.36079823250438,
+            "z": 9.813421611648419
+          },
+          "friendly": true,
+          "attribution_score": 0.63
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.78619845163834,
+            "y": 23.24912789775441,
+            "z": 5.02000649154659
+          },
+          "friendly": true,
+          "attribution_score": 0.89
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.80800535001873,
+            "y": 23.640385103837914,
+            "z": 8.369349898619356
+          },
+          "friendly": true,
+          "attribution_score": 0.86
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.54199831872202,
+            "y": 23.247526434096386,
+            "z": 9.743640939319741
+          },
+          "friendly": true,
+          "attribution_score": 0.98
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.9289853783708,
+            "y": 23.443253114547723,
+            "z": 7.636264934298875
+          },
+          "friendly": false,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.13885023187603,
+            "y": 23.433362502964847,
+            "z": 8.28117760553121
+          },
+          "friendly": false,
+          "attribution_score": 0.88
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13318224031345,
+            "y": 23.795619322378155,
+            "z": 8.829234818718954
+          },
+          "friendly": false,
+          "attribution_score": 0.64
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.20811178632219,
+            "y": 23.349885717518365,
+            "z": 8.189234750088474
+          },
+          "friendly": false,
+          "attribution_score": 0.67
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.00975502232365,
+            "y": 23.62087481291585,
+            "z": 8.207126488690873
+          },
+          "friendly": false,
+          "attribution_score": 0.76
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.10366284384104,
+            "y": 23.37000441542227,
+            "z": 6.907311416849857
+          },
+          "friendly": false,
+          "attribution_score": 0.75
+        }
+      ]
+    },
+    {
+      "time": 1,
+      "action": 2,
+      "message": {
+        "vehicle_type": "SSN",
+        "call_sign": "SEAWOLF",
+        "action": "defensive_repositioning",
+        "explanation": "SSN SEAWOLF executed emergency dive to avoid detection when PLAN frigate HUANGSHAN altered course toward Taiwan waters",
+        "category": "Good",
+        "enemy_type": "FFG",
+        "enemy_callsign": "HUANGSHAN"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.74439193497676,
+            "y": 23.485061420191457,
+            "z": 7.6636470722137
+          },
+          "friendly": true,
+          "attribution_score": 0.79
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93877439927009,
+            "y": 23.639741342266465,
+            "z": 8.048385097104426
+          },
+          "friendly": true,
+          "attribution_score": 0.74
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.84292655879995,
+            "y": 23.35420913360518,
+            "z": 9.838854004572028
+          },
+          "friendly": true,
+          "attribution_score": 0.59
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.78743655816422,
+            "y": 23.24089885633395,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.92
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.8051447101625,
+            "y": 23.64108725172941,
+            "z": 8.326353175490874
+          },
+          "friendly": true,
+          "attribution_score": 0.89
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.53884064645113,
+            "y": 23.241235693752415,
+            "z": 9.75286494805534
+          },
+          "friendly": true,
+          "attribution_score": 0.9
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.92979320454228,
+            "y": 23.437804126023646,
+            "z": 7.594213670748838
+          },
+          "friendly": false,
+          "attribution_score": 0.81
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.14532899152998,
+            "y": 23.424399064604128,
+            "z": 8.24373748719929
+          },
+          "friendly": false,
+          "attribution_score": 0.97
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13434576172916,
+            "y": 23.794819881039913,
+            "z": 8.85112223357816
+          },
+          "friendly": false,
+          "attribution_score": 0.67
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.21196535302899,
+            "y": 23.352776993702808,
+            "z": 8.2132842187983
+          },
+          "friendly": false,
+          "attribution_score": 0.7
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.0138844035969,
+            "y": 23.61579763402773,
+            "z": 8.226758033973049
+          },
+          "friendly": false,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.10472815679839,
+            "y": 23.36061149439087,
+            "z": 6.927722790717018
+          },
+          "friendly": false,
+          "attribution_score": 0.74
+        }
+      ]
+    },
+    {
+      "time": 2,
+      "action": 0,
+      "message": {
+        "vehicle_type": "LCS",
+        "call_sign": "FREEDOM",
+        "action": "maintain_position",
+        "explanation": "LCS FREEDOM maintained southwest position to continue monitoring Chinese frigate HUANGSHAN's approach vector toward Taiwan",
+        "category": "Good"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.74785239904354,
+            "y": 23.48036232652724,
+            "z": 7.634489815132502
+          },
+          "friendly": true,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93942057342466,
+            "y": 23.64324580263312,
+            "z": 8.030144330525381
+          },
+          "friendly": true,
+          "attribution_score": 0.7
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.84964841476594,
+            "y": 23.347692605747653,
+            "z": 9.862638411601655
+          },
+          "friendly": true,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.78894566656021,
+            "y": 23.23295292936236,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.83
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.80219553662603,
+            "y": 23.641737034964578,
+            "z": 8.284543761018083
+          },
+          "friendly": true,
+          "attribution_score": 0.86
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.53595068614395,
+            "y": 23.235093394242195,
+            "z": 9.760117347253182
+          },
+          "friendly": true,
+          "attribution_score": 0.9
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93066311083419,
+            "y": 23.432164538620256,
+            "z": 7.551114193972415
+          },
+          "friendly": false,
+          "attribution_score": 0.78
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.15272297946524,
+            "y": 23.415583934786778,
+            "z": 8.20927626126339
+          },
+          "friendly": false,
+          "attribution_score": 0.93
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13545296506895,
+            "y": 23.79388626278732,
+            "z": 8.874565841324992
+          },
+          "friendly": false,
+          "attribution_score": 0.71
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.21568435659951,
+            "y": 23.355568602768653,
+            "z": 8.238149566255773
+          },
+          "friendly": false,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.01808272981921,
+            "y": 23.610283067762612,
+            "z": 8.24594623807167
+          },
+          "friendly": false,
+          "attribution_score": 0.74
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.1058501726653,
+            "y": 23.35054250387857,
+            "z": 6.948162126419283
+          },
+          "friendly": false,
+          "attribution_score": 0.68
+        }
+      ]
+    },
+    {
+      "time": 3,
+      "action": 0,
+      "message": {
+        "vehicle_type": "LCS",
+        "call_sign": "FREEDOM",
+        "action": "strategic_blocking",
+        "explanation": "LCS FREEDOM coordinated with cruiser ANTIETAM to establish blocking formation against PLAN frigate's increasingly aggressive trajectory",
+        "category": "Good",
+        "enemy_type": "FFG",
+        "enemy_callsign": "HUANGSHAN"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75083336148897,
+            "y": 23.475573473938734,
+            "z": 7.609106487684855
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93961385086337,
+            "y": 23.646697915692048,
+            "z": 8.013320789657882
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.8564893289704,
+            "y": 23.341284033042673,
+            "z": 9.88471912435619
+          },
+          "friendly": true,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.79071785724912,
+            "y": 23.225328833658235,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.83
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.79916353170961,
+            "y": 23.642334164617584,
+            "z": 8.244008309489205
+          },
+          "friendly": true,
+          "attribution_score": 0.88
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.53333562500372,
+            "y": 23.229125972293556,
+            "z": 9.765381453830809
+          },
+          "friendly": true,
+          "attribution_score": 0.97
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93159461073414,
+            "y": 23.426360383750115,
+            "z": 7.507019729311731
+          },
+          "friendly": false,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.16096431962765,
+            "y": 23.406994432603796,
+            "z": 8.17789165689281
+          },
+          "friendly": false,
+          "attribution_score": 0.98
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13650322410763,
+            "y": 23.792821047203102,
+            "z": 8.899502642076737
+          },
+          "friendly": false,
+          "attribution_score": 0.64
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.21926288499306,
+            "y": 23.358253411989633,
+            "z": 8.263813160591917
+          },
+          "friendly": false,
+          "attribution_score": 0.65
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.02234252080656,
+            "y": 23.604385000092076,
+            "z": 8.264662574724461
+          },
+          "friendly": false,
+          "attribution_score": 0.72
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.10702805160122,
+            "y": 23.33987126808766,
+            "z": 6.968617646387695
+          },
+          "friendly": false,
+          "attribution_score": 0.69
+        }
+      ]
+    },
+    {
+      "time": 4,
+      "action": 0,
+      "message": {
+        "vehicle_type": "FFG", 
+        "call_sign": "HUANGSHAN",
+        "action": "unauthorized_approach",
+        "explanation": "PLAN frigate HUANGSHAN continued deliberate course into Taiwan exclusion zone despite multiple warnings from US Navy vessels",
+        "category": "Bad"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75332309814743,
+            "y": 23.470734518458798,
+            "z": 7.5875711641959676
+          },
+          "friendly": true,
+          "attribution_score": 0.81
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.9393529488298,
+            "y": 23.65008934155822,
+            "z": 7.99794596826124
+          },
+          "friendly": true,
+          "attribution_score": 0.79
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.86342731461053,
+            "y": 23.335018213415168,
+            "z": 9.90504442488615
+          },
+          "friendly": true,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.79274383003693,
+            "y": 23.218063717905615,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.89
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.79605455787005,
+            "y": 23.642878375174977,
+            "z": 8.20483083477394
+          },
+          "friendly": true,
+          "attribution_score": 0.83
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.53100196657165,
+            "y": 23.223359111953606,
+            "z": 9.768645158481819
+          },
+          "friendly": true,
+          "attribution_score": 0.9
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.9325871832823,
+            "y": 23.420418452442295,
+            "z": 7.4619847308609515
+          },
+          "friendly": false,
+          "attribution_score": 0.76
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.1699773573561,
+            "y": 23.398705898125577,
+            "z": 8.14967267821408
+          },
+          "friendly": false,
+          "attribution_score": 0.96
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13749594482734,
+            "y": 23.791627177472773,
+            "z": 8.925865623301043
+          },
+          "friendly": false,
+          "attribution_score": 0.69
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.22269524948008,
+            "y": 23.360824561519408,
+            "z": 8.290256803905677
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.02665618686287,
+            "y": 23.59816106439861,
+            "z": 8.282879219173797
+          },
+          "friendly": false,
+          "attribution_score": 0.71
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.1082609119515,
+            "y": 23.305045094517993,
+            "z": 7.029963437067159
+          },
+          "friendly": false,
+          "attribution_score": 0.67
+        }
+      ]
+    },
+    {
+      "time": 5,
+      "action": 0,
+      "message": {
+        "vehicle_type": "LCS",
+        "call_sign": "FREEDOM", 
+        "action": "sustained_tracking",
+        "explanation": "LCS FREEDOM maintained continuous tracking of Chinese frigate HUANGSHAN for five hours while coordinating with submarine SEAWOLF for tactical advantage",
+        "category": "Good",
+        "enemy_type": "FFG",
+        "enemy_callsign": "HUANGSHAN"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75531181685092,
+            "y": 23.46588553101756,
+            "z": 7.56994668963992
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93863959889572,
+            "y": 23.65341188695949,
+            "z": 7.984048648084103
+          },
+          "friendly": true,
+          "attribution_score": 0.76
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.87044007289448,
+            "y": 23.32892916965477,
+            "z": 9.923566706808636
+          },
+          "friendly": true,
+          "attribution_score": 0.61
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.79501295291873,
+            "y": 23.211192981645635,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.85
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.79287462638545,
+            "y": 23.643369424653766,
+            "z": 8.167092536196137
+          },
+          "friendly": true,
+          "attribution_score": 0.84
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.52895551455289,
+            "y": 23.21781763404344,
+            "z": 9.769900953531533
+          },
+          "friendly": true,
+          "attribution_score": 0.96
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93364027336273,
+            "y": 23.414366171679355,
+            "z": 7.416064814218671
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.17967935388465,
+            "y": 23.390791031580576,
+            "z": 8.124699351902681
+          },
+          "friendly": false,
+          "attribution_score": 0.91
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13843056575334,
+            "y": 23.790307952252633,
+            "z": 8.953583939898337
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.2259759936855,
+            "y": 23.363275481918862,
+            "z": 8.317461745167932
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.03984318094948,
+            "y": 23.57815455562954,
+            "z": 8.334264135186908
+          },
+          "friendly": false,
+          "attribution_score": 0.69
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.11227995180445,
+            "y": 23.292782661709264,
+            "z": 7.050365833779023
+          },
+          "friendly": false,
+          "attribution_score": 0.67
+        }
+      ]
+    },
+    {
+      "time": 6,
+      "action": 2,
+      "message": {
+        "vehicle_type": "FFG",
+        "call_sign": "HUANGSHAN",
+        "action": "intercept_course",
+        "explanation": "PLAN frigate HUANGSHAN altered course to intercept vector toward Taiwan's defensive line, triggering elevated alert status among US Navy assets",
+        "category": "Bad"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75679169594187,
+            "y": 23.461066665618862,
+            "z": 7.556284496243734
+          },
+          "friendly": true,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93747853546893,
+            "y": 23.65665752503053,
+            "z": 7.97165484498486
+          },
+          "friendly": true,
+          "attribution_score": 0.71
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.87750506470998,
+            "y": 23.32304996467539,
+            "z": 9.940242586812094
+          },
+          "friendly": true,
+          "attribution_score": 0.63
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.79751331787399,
+            "y": 23.204750102791,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.85
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.78962988573234,
+            "y": 23.643807094709018,
+            "z": 8.130871630239886
+          },
+          "friendly": true,
+          "attribution_score": 0.85
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.52720135838294,
+            "y": 23.21252538932824,
+            "z": 9.769145950207315
+          },
+          "friendly": true,
+          "attribution_score": 0.93
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93475329201388,
+            "y": 23.40823147779887,
+            "z": 7.369316687805873
+          },
+          "friendly": false,
+          "attribution_score": 0.79
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.18998124587594,
+            "y": 23.38331925568852,
+            "z": 8.103042500234045
+          },
+          "friendly": false,
+          "attribution_score": 0.93
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.13930655827173,
+            "y": 23.788867016555596,
+            "z": 8.982583104583494
+          },
+          "friendly": false,
+          "attribution_score": 0.66
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.2290999022625,
+            "y": 23.36559991094142,
+            "z": 8.34540869351775
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.03541431914373,
+            "y": 23.58498144940053,
+            "z": 8.317705887045596
+          },
+          "friendly": false,
+          "attribution_score": 0.78
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.11088784519657,
+            "y": 23.305045094517993,
+            "z": 7.029963437067159
+          },
+          "friendly": false,
+          "attribution_score": 0.67
+        }
+      ]
+    },
+    {
+      "time": 7,
+      "action": 3,
+      "message": {
+        "vehicle_type": "SSN",
+        "call_sign": "SEAWOLF",
+        "action": "weapons_ready",
+        "explanation": "SSN SEAWOLF brought targeting solutions online as Chinese frigate HUANGSHAN breached Taiwan's defense identification zone in clear violation of international law",
+        "category": "Neutral",
+        "enemy_type": "FFG",
+        "enemy_callsign": "HUANGSHAN"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75775691503578,
+            "y": 23.456317826828787,
+            "z": 7.546624453396433
+          },
+          "friendly": true,
+          "attribution_score": 0.74
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.9358774643716,
+            "y": 23.659818414704755,
+            "z": 7.960787760229813
+          },
+          "friendly": true,
+          "attribution_score": 0.78
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.88459958306535,
+            "y": 23.31741252198682,
+            "z": 9.955033006269693
+          },
+          "friendly": true,
+          "attribution_score": 0.63
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.80023180335806,
+            "y": 23.198766474503607,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.93
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.78632660969731,
+            "y": 23.644191190730922,
+            "z": 8.096243188437851
+          },
+          "friendly": true,
+          "attribution_score": 0.82
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.5257438605705,
+            "y": 23.20750515586254,
+            "z": 9.766381885283765
+          },
+          "friendly": true,
+          "attribution_score": 0.93
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93592561675794,
+            "y": 23.402042687543894,
+            "z": 7.3217980828343485
+          },
+          "friendly": false,
+          "attribution_score": 0.8
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.20078846301348,
+            "y": 23.376356106741227,
+            "z": 8.084763540237471
+          },
+          "friendly": false,
+          "attribution_score": 0.94
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.14012342692828,
+            "y": 23.787308351680036,
+            "z": 9.012785188055116
+          },
+          "friendly": false,
+          "attribution_score": 0.71
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.23206200918345,
+            "y": 23.367791909533462,
+            "z": 8.374077831941419
+          },
+          "friendly": false,
+          "attribution_score": 0.72
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.04876105529772,
+            "y": 23.564359491047206,
+            "z": 8.365547414366555
+          },
+          "friendly": false,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.11372310872476,
+            "y": 23.26781273438781,
+            "z": 7.070725522862073
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        }
+      ]
+    },
+    {
+      "time": 8,
+      "action": 0,
+      "message": {
+        "vehicle_type": "FFG",
+        "call_sign": "HUANGSHAN",
+        "action": "course_alteration",
+        "explanation": "PLAN frigate HUANGSHAN adjusted course away from direct confrontation but maintained position within Taiwan's air defense identification zone",
+        "category": "Neutral"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75820367791289,
+            "y": 23.451678339329725,
+            "z": 7.540994751301087
+          },
+          "friendly": true,
+          "attribution_score": 0.79
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93384701169778,
+            "y": 23.662886919657407,
+            "z": 7.951467737060283
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.8917008260702,
+            "y": 23.312047452353188,
+            "z": 9.967903322723334
+          },
+          "friendly": true,
+          "attribution_score": 0.62
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.80315414316206,
+            "y": 23.19327125223025,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.92
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.78297118524664,
+            "y": 23.64452154193135,
+            "z": 8.063278981777843
+          },
+          "friendly": true,
+          "attribution_score": 0.87
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.52458664584805,
+            "y": 23.20277854095245,
+            "z": 9.761615117087523
+          },
+          "friendly": true,
+          "attribution_score": 0.92
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.93715659194899,
+            "y": 23.395828367357485,
+            "z": 7.273567682012002
+          },
+          "friendly": false,
+          "attribution_score": 0.76
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.21200179614759,
+            "y": 23.369962659771993,
+            "z": 8.069914309522552
+          },
+          "friendly": false,
+          "attribution_score": 0.91
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.14088070970882,
+            "y": 23.785636264209476,
+            "z": 9.04410902841453
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.23485760563419,
+            "y": 23.36984587700895,
+            "z": 8.40344883132456
+          },
+          "friendly": false,
+          "attribution_score": 0.69
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.04429473678906,
+            "y": 23.571258106465972,
+            "z": 8.350219217534505
+          },
+          "friendly": false,
+          "attribution_score": 0.76
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.11372310872476,
+            "y": 23.26781273438781,
+            "z": 7.070725522862073
+          },
+          "friendly": false,
+          "attribution_score": 0.7
+        }
+      ]
+    },
+    {
+      "time": 9,
+      "action": 3,
+      "message": {
+        "vehicle_type": "FFG",
+        "call_sign": "HUANGSHAN",
+        "action": "provocative_maneuvers",
+        "explanation": "PLAN frigate HUANGSHAN executed deliberate provocative maneuvers inside Taiwan's maritime boundary, prompting defensive positioning by US Navy assets",
+        "category": "Bad"
+      },
+      "entities": [
+        {
+          "id": 1,
+          "pos": {
+            "x": 121.75813022744876,
+            "y": 23.447186622276426,
+            "z": 7.539411818709392
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 2,
+          "pos": {
+            "x": 121.93140065328937,
+            "y": 23.66585562675396,
+            "z": 7.943712222609953
+          },
+          "friendly": true,
+          "attribution_score": 0.77
+        },
+        {
+          "id": 3,
+          "pos": {
+            "x": 121.89878597022103,
+            "y": 23.30698388757948,
+            "z": 9.978823391024012
+          },
+          "friendly": true,
+          "attribution_score": 0.68
+        },
+        {
+          "id": 4,
+          "pos": {
+            "x": 121.80626500127987,
+            "y": 23.188291211641626,
+            "z": 5
+          },
+          "friendly": true,
+          "attribution_score": 0.88
+        },
+        {
+          "id": 5,
+          "pos": {
+            "x": 121.7795701001768,
+            "y": 23.644798001419783,
+            "z": 8.032047331950105
+          },
+          "friendly": true,
+          "attribution_score": 0.86
+        },
+        {
+          "id": 6,
+          "pos": {
+            "x": 121.52373259215734,
+            "y": 23.1983658881569,
+            "z": 9.754856610870869
+          },
+          "friendly": true,
+          "attribution_score": 0.91
+        },
+        {
+          "id": 7,
+          "pos": {
+            "x": 120.9384455291397,
+            "y": 23.389617201524686,
+            "z": 7.2246850470731365
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 8,
+          "pos": {
+            "x": 121.22351830802518,
+            "y": 23.36419499285548,
+            "z": 8.058536919272013
+          },
+          "friendly": false,
+          "attribution_score": 0.95
+        },
+        {
+          "id": 9,
+          "pos": {
+            "x": 121.14157797830042,
+            "y": 23.78385537411353,
+            "z": 9.076470449271735
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 10,
+          "pos": {
+            "x": 121.2374822474996,
+            "y": 23.371756565359497,
+            "z": 8.433500864867403
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        },
+        {
+          "id": 11,
+          "pos": {
+            "x": 121.04876105529772,
+            "y": 23.564359491047206,
+            "z": 8.365547414366555
+          },
+          "friendly": false,
+          "attribution_score": 0.75
+        },
+        {
+          "id": 12,
+          "pos": {
+            "x": 121.1152162357395,
+            "y": 23.26781273438781,
+            "z": 7.091030772641386
+          },
+          "friendly": false,
+          "attribution_score": 0.73
+        }
+      ]
+    }
+  ],
+  "MissionEvents": []
+}

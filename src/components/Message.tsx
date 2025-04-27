@@ -1,34 +1,41 @@
 import React from "react";
 
-type Category = 'positive' | 'negative' | 'neutral';
-
 type MessageProps = {
+  vehicle_type: string;
+  call_sign: string;
   action: string;
-  vehicle: string;
-  callSign: string;
-  enemy?: string;  // Optional field
   explanation: string;
-  category: Category;
+  category: string;
+  enemy_type?: string;
+  enemy_callsign?: string;
 };
 
-const getCategoryStyles = (category: Category): string => {
+const getCategoryStyles = (category: string): string => {
   switch (category) {
-    case 'positive':
+    case 'Good':
       return 'bg-green-100';
-    case 'negative':
+    case 'Bad':
       return 'bg-red-100';
     default:
       return 'bg-gray-100';
   }
 };
 
-const Message: React.FC<MessageProps> = ({ action, vehicle, callSign, enemy, explanation, category }) => (
+const Message: React.FC<MessageProps> = ({ 
+  vehicle_type, 
+  call_sign, 
+  action, 
+  explanation, 
+  category,
+  enemy_type,
+  enemy_callsign
+}) => (
   <div className="mb-3">
     <div className={`${getCategoryStyles(category)} rounded-lg px-4 py-3 inline-block max-w-[90%]`}>
-      <h1 className="text-lg font-bold">{vehicle}: {callSign}</h1>
+      <h1 className="text-lg font-bold">{vehicle_type}:{call_sign}</h1>
       <h2 className="text-md font-semibold mt-1">{action}</h2>
-      {enemy && (
-        <h2 className="text-md font-semibold mt-1 text-red-600">Enemy: {enemy}</h2>
+      {enemy_type && enemy_callsign && (
+        <h2 className="text-md font-semibold mt-1 text-red-800">{enemy_type}:{enemy_callsign}</h2>
       )}
       <p className="text-sm text-gray-700 mt-2">{explanation}</p>
     </div>

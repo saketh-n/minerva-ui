@@ -1,100 +1,67 @@
 import React, { useState, useEffect } from "react";
 import Message from "./components/Message";
-import YouTube from "react-youtube";
 import HeatMap from "./components/HeatMap";
+import simulationData from "./assets/entity_simulation.json";
 
-type Category = 'positive' | 'negative' | 'neutral';
-
-type MessageType = {
-  id: number;
+type SimulationMessage = {
+  vehicle_type: string;
+  call_sign: string;
   action: string;
-  vehicle: string;
-  callSign: string;
-  enemy?: string;
   explanation: string;
-  category: Category;
+  category: string;
+  enemy_type?: string;
+  enemy_callsign?: string;
 };
 
 function App() {
-  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [messages, setMessages] = useState<SimulationMessage[]>([]);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
-  // useEffect(() => {
-  //   const ws = new WebSocket('ws://localhost:8765');
+  useEffect(() => {
+    // Set up interval to emit messages
+    const interval = setInterval(() => {
+      if (currentStep < simulationData.Timesteps.length) {
+        const timestep = simulationData.Timesteps[currentStep];
+        setMessages(prevMessages => [...prevMessages, timestep.message]);
+        setCurrentStep(prev => prev + 1);
+      } else {
+        clearInterval(interval);
+      }
+    }, 1000);
 
-  //   ws.onopen = () => {
-  //     console.log('Connected to WebSocket server');
-  //   };
-
-  //   ws.onmessage = (event) => {
-  //     const newMessage = JSON.parse(event.data);
-  //     setMessages(prevMessages => [...prevMessages, newMessage]);
-  //   };
-
-  //   ws.onerror = (error) => {
-  //     console.error('WebSocket error:', error);
-  //   };
-
-  //   ws.onclose = () => {
-  //     console.log('Disconnected from WebSocket server');
-  //   };
-
-  //   return () => {
-  //     ws.close();
-  //   };
-  // }, []);
-
-  const videoOpts = {
-    height: '100%',
-    width: '100%',
-    playerVars: {
-      autoplay: 0,
-      controls: 1,
-    },
-  };
+    return () => clearInterval(interval);
+  }, [currentStep]);
 
   return (
     <div className="min-h-screen bg-white flex">
-      {/* Left half - War Game Replay */}
+      {/* Left half - Heatmap */}
       <div className="w-1/2 p-8">
-        <h1 className="text-4xl font-bold mb-8">War Game Replay</h1>
-        <div className="aspect-video rounded-lg overflow-hidden">
-          <YouTube
-            videoId="5mSPQlDgzBY"
-            opts={videoOpts}
-            className="w-full h-full"
+        <h1 className="text-4xl font-bold mb-8">War Game Heatmap</h1>
+        <div className="rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
+          <HeatMap
+            center={[51.505, -0.09]}
+            zoom={6}
           />
         </div>
       </div>
       
-      {/* Right half - Message Area and Heatmap */}
-      <div className="w-1/2 p-8 border-l border-gray-200 flex flex-col">
-        {/* Message Area */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">Message Log</h1>
-          <div className="h-[40vh] overflow-y-auto pr-4 border rounded-lg p-4">
-            <div className="space-y-1">
-              {messages.map((message) => (
-                <Message 
-                  key={message.id} 
-                  action={message.action}
-                  vehicle={message.vehicle}
-                  callSign={message.callSign}
-                  enemy={message.enemy}
-                  explanation={message.explanation}
-                  category={message.category as Category}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Heatmap */}
-        <div className="flex-1 bg-gray-200 rounded-lg overflow-hidden">
-          <div style={{ width: '100%', height: '100%', minHeight: '300px' }}>
-            <HeatMap
-              center={[51.505, -0.09]}
-              zoom={6}
-            />
+      {/* Right half - Message Area */}
+      <div className="w-1/2 p-8 border-l border-gray-200">
+        <h1 className="text-4xl font-bold mb-4">Message Log</h1>
+        <div className="h-[calc(100vh-140px)] overflow-y-auto pr-4 border rounded-lg p-4">
+          <div className="space-y-1">
+            {messages.map((message, index) => (
+              <Message 
+                key={index}
+                vehicle_type={message.vehicle_type}
+                call_sign={message.call_sign}
+                action={message.action}
+                explanation={message.explanation}
+                category={message.category}
+                enemy_type={message.enemy_type}
+                enemy_callsign={message.enemy_callsign}
+              />
+            ))}
           </div>
         </div>
       </div>
