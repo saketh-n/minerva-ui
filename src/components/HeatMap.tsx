@@ -191,19 +191,24 @@ const createRandomJet = (lat: number, lng: number): FighterJet => {
 
 const scenarios: Scenario[] = [
   {
-    name: "Alpha Sector",
-    markerCenter: [51.505, -0.09],
-    heatmapPoints: generateBattlefieldData([51.505, -0.09], 20, 0.06) // Increased radius for more dispersion
+    name: "Northern Taiwan",
+    markerCenter: [25.047, 121.532], // Taipei area
+    heatmapPoints: generateBattlefieldData([25.047, 121.532], 20, 0.06) // Increased radius for more dispersion
   },
   {
-    name: "Bravo Sector",
-    markerCenter: [51.515, -0.05],
-    heatmapPoints: generateBattlefieldData([51.515, -0.05], 18, 0.055) // Increased radius for more dispersion
+    name: "Eastern Taiwan",
+    markerCenter: [23.993, 121.601], // Hualien area
+    heatmapPoints: generateBattlefieldData([23.993, 121.601], 18, 0.05) // Medium radius
   },
   {
-    name: "Charlie Sector",
-    markerCenter: [51.495, -0.15],
-    heatmapPoints: generateBattlefieldData([51.495, -0.15], 22, 0.065) // Increased radius for more dispersion
+    name: "Southern Taiwan",
+    markerCenter: [22.997, 120.212], // Tainan area
+    heatmapPoints: generateBattlefieldData([22.997, 120.212], 22, 0.065) // Increased radius for more dispersion
+  },
+  {
+    name: "Taiwan Strait",
+    markerCenter: [24.150, 119.500], // Taiwan Strait
+    heatmapPoints: generateBattlefieldData([24.150, 119.500], 25, 0.07) // Larger area for strait coverage
   }
 ];
 
@@ -571,7 +576,7 @@ function Tabs({ activeTab, setActiveTab }: { activeTab: number, setActiveTab: (i
   );
 }
 
-export default function HeatMap({ center, zoom }: HeatMapProps) {
+export default function HeatMap({ center = [23.6978, 120.9605], zoom = 8 }: HeatMapProps) { // Default center to Taiwan's geographic center
   const [activeTab, setActiveTab] = useState(0);
   const currentScenario = scenarios[activeTab];
   const markerData = useMovingMarker(currentScenario.markerCenter);
@@ -632,10 +637,18 @@ export default function HeatMap({ center, zoom }: HeatMapProps) {
         zoom={zoom}
         className="leaflet-container"
         style={{ height: '100%', width: '100%' }}
+        maxBounds={[[21.5, 118.0], [26.5, 123.0]]} // Restrict panning to Taiwan area
+        minZoom={7} // Prevent zooming out too far
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.maptiler.com/">MapTiler</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {/* Add a second tile layer for terrain visualization */}
+        <TileLayer
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+          opacity={0.6}
         />
         <MarkerLayer {...markerData} />
         <HeatMapLayer points={currentScenario.heatmapPoints} />
