@@ -365,7 +365,7 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
   }, [map, jets]);
   
   // Create a custom icon for fighter jets
-  function createJetIcon(strategicValue: number) {
+  function createJetIcon(strategicValue: number, size: number = 24) {
     // Determine color based on strategic value
     const getColor = () => {
       if (strategicValue >= 8) return '#FF3B30'; // High value - red
@@ -379,12 +379,14 @@ function AircraftIcons({ jets }: { jets: FighterJet[] }) {
     // Create a custom fighter jet icon that looks like a plane
     return L.divIcon({
       className: 'fighter-jet-icon',
-      html: `
-        <svg width="40" height="40" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-    <path d="M256 0 L288 192 L448 256 L288 320 L256 512 L224 320 L64 256 L224 192 Z" 
-          fill="${color}" stroke="black" stroke-width="10" />
-  </svg>
-      `,
+      html: `<div style="
+        width: ${size}px; 
+        height: ${size}px; 
+        background-image: url('/images/fighter-jet.svg'); 
+        background-size: contain; 
+        background-repeat: no-repeat;
+        filter: drop-shadow(0 0 2px rgba(0,0,0,0.7)) drop-shadow(0 0 4px ${color});
+      "></div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12]
     });
