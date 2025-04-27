@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Message from "./components/Message";
 import YouTube from "react-youtube";
+import HeatMap from "./components/HeatMap";
 
 type Category = 'positive' | 'negative' | 'neutral';
 
@@ -17,30 +18,30 @@ type MessageType = {
 function App() {
   const [messages, setMessages] = useState<MessageType[]>([]);
 
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8765');
+  // useEffect(() => {
+  //   const ws = new WebSocket('ws://localhost:8765');
 
-    ws.onopen = () => {
-      console.log('Connected to WebSocket server');
-    };
+  //   ws.onopen = () => {
+  //     console.log('Connected to WebSocket server');
+  //   };
 
-    ws.onmessage = (event) => {
-      const newMessage = JSON.parse(event.data);
-      setMessages(prevMessages => [...prevMessages, newMessage]);
-    };
+  //   ws.onmessage = (event) => {
+  //     const newMessage = JSON.parse(event.data);
+  //     setMessages(prevMessages => [...prevMessages, newMessage]);
+  //   };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+  //   ws.onerror = (error) => {
+  //     console.error('WebSocket error:', error);
+  //   };
 
-    ws.onclose = () => {
-      console.log('Disconnected from WebSocket server');
-    };
+  //   ws.onclose = () => {
+  //     console.log('Disconnected from WebSocket server');
+  //   };
 
-    return () => {
-      ws.close();
-    };
-  }, []);
+  //   return () => {
+  //     ws.close();
+  //   };
+  // }, []);
 
   const videoOpts = {
     height: '100%',
@@ -87,9 +88,14 @@ function App() {
           </div>
         </div>
 
-        {/* Heatmap Placeholder */}
-        <div className="flex-1 bg-gray-200 rounded-lg flex items-center justify-center">
-          <p className="text-gray-600 text-lg">Heatmap Goes Here</p>
+        {/* Heatmap */}
+        <div className="flex-1 bg-gray-200 rounded-lg overflow-hidden">
+          <div style={{ width: '100%', height: '100%', minHeight: '300px' }}>
+            <HeatMap
+              center={[51.505, -0.09]}
+              zoom={13}
+            />
+          </div>
         </div>
       </div>
     </div>
